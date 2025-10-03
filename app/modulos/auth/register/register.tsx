@@ -85,12 +85,15 @@ const RegisterScreen = () => {
       if (!/^(?=.*[A-Z])(?=.*\d).+$/.test(password)) {
         newErrors.passwordInvalid = true;
       }
+      if (password != repeatPassword) {
+        newErrors.passwordFailed = true;
+      }
     }
 
-    if (!password && password != repeatPassword) {
-      newErrors.passwordFailed = true;
-    }
-    
+    if (!password && password == repeatPassword) {
+        newErrors.passwordFailed = true;
+      }
+
     const invalid = Object.values(newErrors).includes(true);
 
     setErrors(newErrors);
