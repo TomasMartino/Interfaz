@@ -1,7 +1,6 @@
 import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
- 
 
 import { useEffect } from "react";
 import * as NavigationBar from "expo-navigation-bar";
@@ -11,10 +10,8 @@ import { StatusBar } from "react-native";
 import LoginScreen from "./app/modulos/auth/login/login";
 
 export type RootStackParamList = {
-  
   Login: undefined;
-  RegistroPropietario:undefined;
-  
+  RegistroPropietario: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -30,16 +27,13 @@ export default function App() {
   }, []);
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <StatusBar/>
+      <StatusBar />
       <NavigationContainer>
         <Stack.Navigator
-          screenOptions={{ headerShown: false }} 
-          initialRouteName="RegistroPropietario"
-        >  
-          <Stack.Screen
-            name="RegistroPropietario"
-            component={LoginScreen}
-          /> 
+          screenOptions={{ headerShown: false }}
+          initialRouteName="Login"
+        >
+          <Stack.Screen name="Login" component={LoginScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </GestureHandlerRootView>
