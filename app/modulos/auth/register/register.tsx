@@ -8,7 +8,10 @@ import {
   HelperText,
 } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
+import { RootStackParamList } from "../../../../App";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
+type NavigationProp = NativeStackNavigationProp<RootStackParamList, "Register">;
 type errorsTypes = {
   notEmail: boolean;
   emailEmpty: boolean;
@@ -36,7 +39,7 @@ const startErrors = {
 };
 
 const RegisterScreen = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp>();
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
