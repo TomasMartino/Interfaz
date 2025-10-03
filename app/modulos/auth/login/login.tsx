@@ -1,55 +1,107 @@
 // LoginScreen.js
 import React, { useState } from "react";
-import { TouchableOpacity } from "react-native";
+import { KeyboardAvoidingView, Platform, View } from "react-native";
 import styled from "styled-components/native"; // 👈 styled-components (npm install styled-components)
-import { Ionicons } from "@expo/vector-icons"; // 👈 librería de iconos (expo install @expo/vector-icons)
+import {
+  Text,
+  TextInput,
+  Button,
+  ActivityIndicator,
+  HelperText,
+} from "react-native-paper";
+import { useNavigation } from "@react-navigation/native";
 
 const LoginScreen = () => {
-  const [email, setEmail] = useState("");
+  const navigation = useNavigation();
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [usernameHasError, setUsernameHasError] = useState(false);
+  const [passwordHasError, setPasswordHasError] = useState(false);
 
   const handleLogin = () => {
-    if (!email || !password) {
-      alert("Por favor complete todos los campos.");
+    setIsProcessing(true);
+    if (!username) {
+      setUsernameHasError(true);
+    }
+
+    if (!password) {
+      setPasswordHasError(true);
+    }
+
+    if (!username || !password) {
+      setIsProcessing(false);
       return;
     }
+
+    setUsernameHasError(false);
+    setPasswordHasError(false);
     // Aquí conectas con tu backend
-    alert(`Login con correo: ${email}`);
+    alert(`Login con correo: ${username}`);
   };
 
   return (
-    <Container>
-      <Title>Iniciar Sesión</Title>
-
-      <Input
-        placeholder="Correo electrónico"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-        autoCapitalize="none"
-      />
-
-      <PasswordContainer>
-        <PasswordInput
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text variant="displayMedium" style={{ marginBottom: 16 }}>
+          Iniciar Sesión
+        </Text>
+        <TextInput
+          label="Nombre de Usuario"
+          mode="outlined"
+          placeholder="Nombre"
+          value={username}
+          onChangeText={setUsername}
+          autoCapitalize="none"
+          error={usernameHasError}
+          style={{
+            width: "80%",
+          }}
+        />
+        <HelperText type="error" visible={usernameHasError}>
+          Introduzca su nombre de usuario
+        </HelperText>
+        <TextInput
+          label="Contraseña"
+          mode="outlined"
           placeholder="Contraseña"
           value={password}
-          onChangeText={setPassword}
           secureTextEntry={!showPassword}
-        />
-        <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-          <Ionicons
-            name={showPassword ? "eye-off" : "eye"}
-            size={24}
-            color="#555"
-          />
-        </TouchableOpacity>
-      </PasswordContainer>
-
-      <Button onPress={handleLogin}>
-        <ButtonText>Ingresar</ButtonText>
-      </Button>
-    </Container>
+          error={passwordHasError}
+          onChangeText={setPassword}
+          autoCapitalize="none"
+          right={
+            <TextInput.Icon
+              icon={showPassword ? "eye" : "eye-off"}
+              onPress={() => setShowPassword(!showPassword)}
+            />
+          }
+          style={{
+            width: "80%",
+          }}
+        ></TextInput>
+        <HelperText type="error" visible={passwordHasError}>
+          Introduzca su contraseña
+        </HelperText>
+        <Button
+          mode="contained"
+          style={{
+            width: "80%",
+            marginBottom: 16,
+          }}
+          onPress={handleLogin}
+          disabled={isProcessing}
+        >
+          {isProcessing ? (
+            <ActivityIndicator animating={true} color="white" />
+          ) : (
+            "Ingresar"
+          )}
+        </Button>
+        <Button mode="text" onPress={() => navigation.navigate('Register')}>
+          Crea una cuenta
+        </Button>
+      </View>
   );
 };
 
@@ -99,14 +151,14 @@ const PasswordInput = styled.TextInput`
   height: 100%;
 `;
 
-const Button = styled.TouchableOpacity`
+/*const Button = styled.TouchableOpacity`
   width: 100%;
   height: 50px;
   background-color: #007bff;
   border-radius: 12px;
   justify-content: center;
   align-items: center;
-`;
+`;*/
 
 const ButtonText = styled.Text`
   color: #fff;
