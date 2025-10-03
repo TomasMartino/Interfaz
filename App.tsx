@@ -8,6 +8,7 @@ import * as NavigationBar from "expo-navigation-bar";
 
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { StatusBar } from "react-native";
+import LoginScreen from "./app/modulos/auth/login/login";
 
 export type RootStackParamList = {
   
@@ -32,13 +33,12 @@ export default function App() {
       <StatusBar/>
       <NavigationContainer>
         <Stack.Navigator
-          screenOptions={{ headerShown: false }}
-          initialRouteName="inRegistroPropietarioicio"
-        >
-           
+          screenOptions={{ headerShown: false }} 
+          initialRouteName="RegistroPropietario"
+        >  
           <Stack.Screen
             name="RegistroPropietario"
-            component={RegistroPropietario}
+            component={LoginScreen}
           /> 
         </Stack.Navigator>
       </NavigationContainer>
