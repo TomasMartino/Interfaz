@@ -1,4 +1,4 @@
-# Interfaz
+# VoxPopuli 🗣️📣 
 
 App de votaciones en tiempo real con React Native y Expo.
 
