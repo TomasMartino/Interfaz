@@ -69,17 +69,17 @@ const RegisterScreen = () => {
     if (!username) {
       newErrors.usernameEmpty = true;
     } else {
-      if (username.length < 26) {
-        newErrors.usernameMin = true;
+      if (username.length > 26) {
+        newErrors.usernameMax = true;
       }
       if (username.length < 5) {
-        newErrors.usernameMax = true;
+        newErrors.usernameMin = true;
       }
     }
     if (!password) {
       newErrors.passwordEmpty = true;
     } else {
-      if (password.length < 33) {
+      if (password.length >= 33) {
         newErrors.passwordMax = true;
       }
       if (password.length < 8) {
@@ -92,10 +92,6 @@ const RegisterScreen = () => {
         newErrors.passwordFailed = true;
       }
     }
-
-    if (!password && password == repeatPassword) {
-        newErrors.passwordFailed = true;
-      }
 
     const invalid = Object.values(newErrors).includes(true);
 
