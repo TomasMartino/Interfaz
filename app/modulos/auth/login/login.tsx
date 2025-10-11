@@ -103,69 +103,10 @@ const LoginScreen = () => {
         )}
       </Button>
       <Button mode="text" onPress={() => navigation.navigate("Register")}>
-        Crea una cuenta
+        ¿No tienes cuenta? Registrate
       </Button>
     </View>
   );
 };
 
 export default LoginScreen;
-
-// 🎨 Styled Components
-const Container = styled.View`
-  flex: 1;
-  justify-content: center;
-  align-items: center;
-  padding: 24px;
-  background-color: #f8f9fa;
-`;
-
-const Title = styled.Text`
-  font-size: 28px;
-  font-weight: bold;
-  margin-bottom: 32px;
-  color: #333;
-`;
-
-const Input = styled.TextInput`
-  width: 100%;
-  height: 50px;
-  border: 1px solid #ccc;
-  border-radius: 12px;
-  padding: 0 16px;
-  margin-bottom: 20px;
-  background-color: #fff;
-`;
-
-const PasswordContainer = styled.View`
-  width: 100%;
-  height: 50px;
-  border: 1px solid #ccc;
-  border-radius: 12px;
-  padding: 0 12px;
-  margin-bottom: 20px;
-  background-color: #fff;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-`;
-
-const PasswordInput = styled.TextInput`
-  flex: 1;
-  height: 100%;
-`;
-
-/*const Button = styled.TouchableOpacity`
-  width: 100%;
-  height: 50px;
-  background-color: #007bff;
-  border-radius: 12px;
-  justify-content: center;
-  align-items: center;
-`;*/
-
-const ButtonText = styled.Text`
-  color: #fff;
-  font-size: 18px;
-  font-weight: bold;
-`;

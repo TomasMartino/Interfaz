@@ -18,6 +18,7 @@ type errorsTypes = {
   usernameMax: boolean;
   usernameMin: boolean;
   usernameEmpty: boolean;
+  usernameInvalid: boolean;
   passwordMin: boolean;
   passwordMax: boolean;
   passwordInvalid: boolean;
@@ -25,12 +26,13 @@ type errorsTypes = {
   passwordFailed: boolean;
 };
 
-const startErrors = {
+const startErrors: errorsTypes = {
   notEmail: false,
   emailEmpty: false,
   usernameMax: false,
   usernameMin: false,
   usernameEmpty: false,
+  usernameInvalid: false,
   passwordMin: false,
   passwordMax: false,
   passwordInvalid: false,
@@ -60,49 +62,46 @@ const RegisterScreen = () => {
   };
 
   const validateForm = () => {
-    setErrors(startErrors);
-    let invalid = false;
+    let newErrors = { ...startErrors };
     if (!email) {
-      setErrors({ ...errors, emailEmpty: true });
-      invalid = true;
+      newErrors.emailEmpty = true;
     } else if (!/\S+@\S+\.\S+/.test(email)) {
-      setErrors({ ...errors, emailEmpty: false, notEmail: true });
-      invalid = true;
+      newErrors.notEmail = true;
     }
     if (!username) {
-      setErrors({ ...errors, usernameEmpty: true });
-      invalid = true;
+      newErrors.usernameEmpty = true;
     } else {
-      if (username.length < 26) {
-        setErrors({ ...errors, usernameMin: false, usernameMax: true });
-        invalid = true;
+      if (/[!@#$%^&*()\-+={}[\]:;"'<>,.?\/|\\]/.test(username)) {
+        newErrors.usernameInvalid = true;
       }
-      if (username.length < 5) {
-        setErrors({ ...errors, usernameMin: true, usernameMax: false });
-        invalid = true;
+      if (username.length >= 25) {
+        newErrors.usernameMax = true;
+      }
+      if (username.length <= 4) {
+        newErrors.usernameMin = true;
       }
     }
     if (!password) {
-      setErrors({ ...errors, passwordEmpty: true });
-      invalid = true;
+      newErrors.passwordEmpty = true;
     } else {
-      if (password.length < 33) {
-        setErrors({ ...errors, passwordMax: true, passwordMin: false });
-        invalid = true;
+      if (password.length >= 32) {
+        newErrors.passwordMax = true;
       }
-      if (password.length < 8) {
-        setErrors({ ...errors, passwordMax: false, passwordMin: true });
-        invalid = true;
+      if (password.length <= 8) {
+        newErrors.passwordMin = true;
       }
       if (!/^(?=.*[A-Z])(?=.*\d).+$/.test(password)) {
-        setErrors({ ...errors, passwordInvalid: true });
-        invalid = true;
+        newErrors.passwordInvalid = true;
       }
       if (password != repeatPassword) {
-        setErrors({ ...errors, passwordFailed: true });
-        invalid = true;
+        newErrors.passwordFailed = true;
       }
     }
+
+    const invalid = Object.values(newErrors).includes(true);
+
+    setErrors(newErrors);
+
     return invalid;
   };
 
@@ -114,7 +113,7 @@ const RegisterScreen = () => {
       <TextInput
         label="Email"
         mode="outlined"
-        placeholder="Nombre"
+        placeholder="Email"
         keyboardType="email-address"
         value={email}
         onChangeText={setEmail}
@@ -125,7 +124,8 @@ const RegisterScreen = () => {
         }}
       />
       <HelperText type="error" visible={errors.emailEmpty || errors.notEmail}>
-        La contraseña no es la misma
+        {errors.emailEmpty && "Introduzca su dirrección de email"}
+        {errors.notEmail && "No es un email"}
       </HelperText>
       <TextInput
         label="Nombre de Usuario"
@@ -134,15 +134,30 @@ const RegisterScreen = () => {
         value={username}
         onChangeText={setUsername}
         autoCapitalize="none"
-        error={errors.usernameEmpty || errors.usernameMax || errors.usernameMin}
+        error={
+          errors.usernameEmpty ||
+          errors.passwordInvalid ||
+          errors.usernameMax ||
+          errors.usernameMin
+        }
         style={{
           width: "80%",
         }}
       />
-      <HelperText type="error" visible={errors.usernameEmpty}>
+      <HelperText
+        type="error"
+        visible={
+          errors.usernameEmpty ||
+          errors.passwordInvalid ||
+          errors.usernameMax ||
+          errors.usernameMin
+        }
+      >
         {errors.usernameEmpty && "Introduzca su nombre de usuario"}
-        {errors.usernameMax && "El nombre de usuario es demasiado largo"}
-        {errors.usernameMin && "El nombre de usuario debe ser más largo"}
+        {errors.usernameInvalid &&
+          "El nombre de usuario no puede contener caracteres especiales \n"}
+        {errors.usernameMax && "El nombre de usuario es demasiado largo \n"}
+        {errors.usernameMin && "El nombre de usuario debe ser más largo \n"}
       </HelperText>
       <TextInput
         label="Contraseña"
@@ -179,10 +194,10 @@ const RegisterScreen = () => {
         }
       >
         {errors.passwordEmpty && "Introduzca su contraseña"}
-        {errors.passwordMax && "La contraseña es demasiado larga"}
+        {errors.passwordMax && "La contraseña es demasiado larga \n"}
+        {errors.passwordMin && "La contraseña debe ser más larga \n"}
         {errors.passwordInvalid &&
           "La contraseña necesita un numero y una letra en mayuscula"}
-        {errors.passwordMax && "La contraseña debe ser más larga"}
       </HelperText>
       <TextInput
         label="Repita la contraseña"
@@ -190,7 +205,7 @@ const RegisterScreen = () => {
         placeholder="Contraseña"
         value={repeatPassword}
         secureTextEntry={!showPassword}
-        error={errors.passwordFailed}
+        error={errors.passwordEmpty ||  errors.passwordFailed}
         onChangeText={setRepeatPassword}
         autoCapitalize="none"
         right={
@@ -203,7 +218,10 @@ const RegisterScreen = () => {
           width: "80%",
         }}
       ></TextInput>
-      <HelperText type="error" visible={errors.passwordFailed}>
+      <HelperText
+        type="error"
+        visible={errors.passwordEmpty || errors.passwordFailed}
+      >
         La contraseña no es la misma
       </HelperText>
       <Button
@@ -222,7 +240,7 @@ const RegisterScreen = () => {
         )}
       </Button>
       <Button mode="text" onPress={() => navigation.navigate("Login")}>
-        Inicia Sesión
+        ¿Tienes una cuenta? Inicia Sesión
       </Button>
     </View>
   );
