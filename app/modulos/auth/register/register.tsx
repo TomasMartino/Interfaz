@@ -98,11 +98,11 @@ const RegisterScreen = () => {
       }
     }
 
-    const invalid = Object.values(newErrors).includes(true);
+    const hasErrors = Object.values(newErrors).includes(true);
 
     setErrors(newErrors);
 
-    return invalid;
+    return hasErrors;
   };
 
   return (
