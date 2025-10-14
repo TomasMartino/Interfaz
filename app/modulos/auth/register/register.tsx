@@ -123,10 +123,16 @@ const RegisterScreen = () => {
           width: "80%",
         }}
       />
-      <HelperText type="error" visible={errors.emailEmpty || errors.notEmail}>
-        {errors.emailEmpty && "Introduzca su dirrección de email"}
-        {errors.notEmail && "No es un email"}
-      </HelperText>
+      {errors.emailEmpty && (
+        <HelperText type="error" visible>
+          Introduzca su dirección de email
+        </HelperText>
+      )}
+      {errors.notEmail && (
+        <HelperText type="error" visible>
+          No es un email
+        </HelperText>
+      )}
       <TextInput
         label="Nombre de Usuario"
         mode="outlined"
@@ -144,21 +150,26 @@ const RegisterScreen = () => {
           width: "80%",
         }}
       />
-      <HelperText
-        type="error"
-        visible={
-          errors.usernameEmpty ||
-          errors.passwordInvalid ||
-          errors.usernameMax ||
-          errors.usernameMin
-        }
-      >
-        {errors.usernameEmpty && "Introduzca su nombre de usuario"}
-        {errors.usernameInvalid &&
-          "El nombre de usuario no puede contener caracteres especiales \n"}
-        {errors.usernameMax && "El nombre de usuario es demasiado largo \n"}
-        {errors.usernameMin && "El nombre de usuario debe ser más largo \n"}
-      </HelperText>
+      {errors.usernameEmpty && (
+        <HelperText type="error" visible>
+          Introduzca su nombre de usuario
+        </HelperText>
+      )}
+      {errors.usernameInvalid && (
+        <HelperText type="error" visible>
+          El nombre de usuario no puede contener caracteres especiales
+        </HelperText>
+      )}
+      {errors.usernameMax && (
+        <HelperText type="error" visible>
+          El nombre de usuario es demasiado largo
+        </HelperText>
+      )}
+      {errors.usernameMin && (
+        <HelperText type="error" visible>
+          El nombre de usuario debe ser más largo
+        </HelperText>
+      )}
       <TextInput
         label="Contraseña"
         mode="outlined"
@@ -184,28 +195,33 @@ const RegisterScreen = () => {
           width: "80%",
         }}
       ></TextInput>
-      <HelperText
-        type="error"
-        visible={
-          errors.passwordEmpty ||
-          errors.passwordInvalid ||
-          errors.passwordMax ||
-          errors.passwordMin
-        }
-      >
-        {errors.passwordEmpty && "Introduzca su contraseña"}
-        {errors.passwordMax && "La contraseña es demasiado larga \n"}
-        {errors.passwordMin && "La contraseña debe ser más larga \n"}
-        {errors.passwordInvalid &&
-          "La contraseña necesita un numero y una letra en mayuscula"}
-      </HelperText>
+      {errors.passwordEmpty && (
+        <HelperText type="error" visible>
+          Introduzca su contraseña
+        </HelperText>
+      )}
+      {errors.passwordMax && (
+        <HelperText type="error" visible>
+          La contraseña es demasiado larga
+        </HelperText>
+      )}
+      {errors.passwordMin && (
+        <HelperText type="error" visible>
+          La contraseña debe ser más larga
+        </HelperText>
+      )}
+      {errors.passwordInvalid && (
+        <HelperText type="error" visible>
+          La contraseña necesita un número y una letra en mayúscula
+        </HelperText>
+      )}
       <TextInput
         label="Repita la contraseña"
         mode="outlined"
         placeholder="Contraseña"
         value={repeatPassword}
         secureTextEntry={!showPassword}
-        error={errors.passwordEmpty ||  errors.passwordFailed}
+        error={errors.passwordEmpty || errors.passwordFailed}
         onChangeText={setRepeatPassword}
         autoCapitalize="none"
         right={
