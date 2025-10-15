@@ -15,34 +15,50 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, "Login">;
 
+type errorsTypes = {
+  usernameEmpty: boolean;
+  passwordEmpty: boolean;
+};
+
+const startErrors: errorsTypes = {
+  usernameEmpty: false,
+  passwordEmpty: false,
+};
+
 const LoginScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [usernameHasError, setUsernameHasError] = useState(false);
-  const [passwordHasError, setPasswordHasError] = useState(false);
+  const [errors, setErrors] = useState<errorsTypes>(startErrors);
 
   const handleLogin = () => {
     setIsProcessing(true);
-    if (!username) {
-      setUsernameHasError(true);
-    }
 
-    if (!password) {
-      setPasswordHasError(true);
-    }
-
-    if (!username || !password) {
+    if (checkErrors()) {
       setIsProcessing(false);
       return;
     }
-
-    setUsernameHasError(false);
-    setPasswordHasError(false);
-    // Aquí conectas con tu backend
+    
     alert(`Login con correo: ${username}`);
+  };
+
+  const checkErrors = (): boolean => {
+    let newErrors = { ...startErrors };
+    if (!username) {
+      newErrors.usernameEmpty = true;
+    }
+
+    if (!password) {
+      newErrors.passwordEmpty = true;
+    }
+
+    const hasErrors = Object.values(newErrors).includes(true);
+
+    setErrors(newErrors);
+
+    return hasErrors;
   };
 
   return (
@@ -57,12 +73,12 @@ const LoginScreen = () => {
         value={username}
         onChangeText={setUsername}
         autoCapitalize="none"
-        error={usernameHasError}
+        error={errors.usernameEmpty}
         style={{
           width: "80%",
         }}
       />
-      <HelperText type="error" visible={usernameHasError}>
+      <HelperText type="error" visible={errors.usernameEmpty}>
         Introduzca su nombre de usuario
       </HelperText>
       <TextInput
@@ -71,7 +87,7 @@ const LoginScreen = () => {
         placeholder="Contraseña"
         value={password}
         secureTextEntry={!showPassword}
-        error={passwordHasError}
+        error={errors.passwordEmpty}
         onChangeText={setPassword}
         autoCapitalize="none"
         right={
@@ -84,7 +100,7 @@ const LoginScreen = () => {
           width: "80%",
         }}
       ></TextInput>
-      <HelperText type="error" visible={passwordHasError}>
+      <HelperText type="error" visible={errors.passwordEmpty}>
         Introduzca su contraseña
       </HelperText>
       <Button
@@ -103,69 +119,10 @@ const LoginScreen = () => {
         )}
       </Button>
       <Button mode="text" onPress={() => navigation.navigate("Register")}>
-        Crea una cuenta
+        ¿No tienes cuenta? Registrate
       </Button>
     </View>
   );
 };
 
 export default LoginScreen;
-
-// 🎨 Styled Components
-const Container = styled.View`
-  flex: 1;
-  justify-content: center;
-  align-items: center;
-  padding: 24px;
-  background-color: #f8f9fa;
-`;
-
-const Title = styled.Text`
-  font-size: 28px;
-  font-weight: bold;
-  margin-bottom: 32px;
-  color: #333;
-`;
-
-const Input = styled.TextInput`
-  width: 100%;
-  height: 50px;
-  border: 1px solid #ccc;
-  border-radius: 12px;
-  padding: 0 16px;
-  margin-bottom: 20px;
-  background-color: #fff;
-`;
-
-const PasswordContainer = styled.View`
-  width: 100%;
-  height: 50px;
-  border: 1px solid #ccc;
-  border-radius: 12px;
-  padding: 0 12px;
-  margin-bottom: 20px;
-  background-color: #fff;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-`;
-
-const PasswordInput = styled.TextInput`
-  flex: 1;
-  height: 100%;
-`;
-
-/*const Button = styled.TouchableOpacity`
-  width: 100%;
-  height: 50px;
-  background-color: #007bff;
-  border-radius: 12px;
-  justify-content: center;
-  align-items: center;
-`;*/
-
-const ButtonText = styled.Text`
-  color: #fff;
-  font-size: 18px;
-  font-weight: bold;
-`;

@@ -12,12 +12,14 @@ import { RootStackParamList } from "../../../../App";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, "Register">;
+
 type errorsTypes = {
   notEmail: boolean;
   emailEmpty: boolean;
   usernameMax: boolean;
   usernameMin: boolean;
   usernameEmpty: boolean;
+  usernameInvalid: boolean;
   passwordMin: boolean;
   passwordMax: boolean;
   passwordInvalid: boolean;
@@ -25,12 +27,13 @@ type errorsTypes = {
   passwordFailed: boolean;
 };
 
-const startErrors = {
+const startErrors: errorsTypes = {
   notEmail: false,
   emailEmpty: false,
   usernameMax: false,
   usernameMin: false,
   usernameEmpty: false,
+  usernameInvalid: false,
   passwordMin: false,
   passwordMax: false,
   passwordInvalid: false,
@@ -51,7 +54,7 @@ const RegisterScreen = () => {
   const handleLogin = () => {
     setIsProcessing(true);
 
-    if (validateForm()) {
+    if (checkErrors()) {
       setIsProcessing(false);
       return;
     }
@@ -59,51 +62,48 @@ const RegisterScreen = () => {
     alert(`Creaste una cuenta con el correo: ${email}`);
   };
 
-  const validateForm = () => {
-    setErrors(startErrors);
-    let invalid = false;
+  const checkErrors = () : boolean => {
+    let newErrors = { ...startErrors };
     if (!email) {
-      setErrors({ ...errors, emailEmpty: true });
-      invalid = true;
+      newErrors.emailEmpty = true;
     } else if (!/\S+@\S+\.\S+/.test(email)) {
-      setErrors({ ...errors, emailEmpty: false, notEmail: true });
-      invalid = true;
+      newErrors.notEmail = true;
     }
     if (!username) {
-      setErrors({ ...errors, usernameEmpty: true });
-      invalid = true;
+      newErrors.usernameEmpty = true;
     } else {
-      if (username.length < 26) {
-        setErrors({ ...errors, usernameMin: false, usernameMax: true });
-        invalid = true;
+      if (/[!@#$%^&*()\-+={}[\]:;"'<>,.?\/|\\]/.test(username)) {
+        newErrors.usernameInvalid = true;
       }
-      if (username.length < 5) {
-        setErrors({ ...errors, usernameMin: true, usernameMax: false });
-        invalid = true;
+      if (username.length >= 25) {
+        newErrors.usernameMax = true;
+      }
+      if (username.length <= 4) {
+        newErrors.usernameMin = true;
       }
     }
     if (!password) {
-      setErrors({ ...errors, passwordEmpty: true });
-      invalid = true;
+      newErrors.passwordEmpty = true;
     } else {
-      if (password.length < 33) {
-        setErrors({ ...errors, passwordMax: true, passwordMin: false });
-        invalid = true;
+      if (password.length >= 32) {
+        newErrors.passwordMax = true;
       }
-      if (password.length < 8) {
-        setErrors({ ...errors, passwordMax: false, passwordMin: true });
-        invalid = true;
+      if (password.length <= 8) {
+        newErrors.passwordMin = true;
       }
       if (!/^(?=.*[A-Z])(?=.*\d).+$/.test(password)) {
-        setErrors({ ...errors, passwordInvalid: true });
-        invalid = true;
+        newErrors.passwordInvalid = true;
       }
       if (password != repeatPassword) {
-        setErrors({ ...errors, passwordFailed: true });
-        invalid = true;
+        newErrors.passwordFailed = true;
       }
     }
-    return invalid;
+
+    const hasErrors = Object.values(newErrors).includes(true);
+
+    setErrors(newErrors);
+
+    return hasErrors;
   };
 
   return (
@@ -112,9 +112,46 @@ const RegisterScreen = () => {
         Crear una cuenta
       </Text>
       <TextInput
-        label="Email"
+        label="Nombre de Usuario"
         mode="outlined"
         placeholder="Nombre"
+        value={username}
+        onChangeText={setUsername}
+        autoCapitalize="none"
+        error={
+          errors.usernameEmpty ||
+          errors.passwordInvalid ||
+          errors.usernameMax ||
+          errors.usernameMin
+        }
+        style={{
+          width: "80%",
+        }}
+      />
+      {errors.usernameEmpty && (
+        <HelperText type="error" visible>
+          Introduzca su nombre de usuario
+        </HelperText>
+      )}
+      {errors.usernameInvalid && (
+        <HelperText type="error" visible>
+          El nombre de usuario no puede contener caracteres especiales
+        </HelperText>
+      )}
+      {errors.usernameMax && (
+        <HelperText type="error" visible>
+          El nombre de usuario es demasiado largo
+        </HelperText>
+      )}
+      {errors.usernameMin && (
+        <HelperText type="error" visible>
+          El nombre de usuario debe ser más largo
+        </HelperText>
+      )}
+      <TextInput
+        label="Email"
+        mode="outlined"
+        placeholder="Email"
         keyboardType="email-address"
         value={email}
         onChangeText={setEmail}
@@ -124,26 +161,16 @@ const RegisterScreen = () => {
           width: "80%",
         }}
       />
-      <HelperText type="error" visible={errors.emailEmpty || errors.notEmail}>
-        La contraseña no es la misma
-      </HelperText>
-      <TextInput
-        label="Nombre de Usuario"
-        mode="outlined"
-        placeholder="Nombre"
-        value={username}
-        onChangeText={setUsername}
-        autoCapitalize="none"
-        error={errors.usernameEmpty || errors.usernameMax || errors.usernameMin}
-        style={{
-          width: "80%",
-        }}
-      />
-      <HelperText type="error" visible={errors.usernameEmpty}>
-        {errors.usernameEmpty && "Introduzca su nombre de usuario"}
-        {errors.usernameMax && "El nombre de usuario es demasiado largo"}
-        {errors.usernameMin && "El nombre de usuario debe ser más largo"}
-      </HelperText>
+      {errors.emailEmpty && (
+        <HelperText type="error" visible>
+          Introduzca su dirección de email
+        </HelperText>
+      )}
+      {errors.notEmail && (
+        <HelperText type="error" visible>
+          No es un email
+        </HelperText>
+      )}
       <TextInput
         label="Contraseña"
         mode="outlined"
@@ -169,28 +196,33 @@ const RegisterScreen = () => {
           width: "80%",
         }}
       ></TextInput>
-      <HelperText
-        type="error"
-        visible={
-          errors.passwordEmpty ||
-          errors.passwordInvalid ||
-          errors.passwordMax ||
-          errors.passwordMin
-        }
-      >
-        {errors.passwordEmpty && "Introduzca su contraseña"}
-        {errors.passwordMax && "La contraseña es demasiado larga"}
-        {errors.passwordInvalid &&
-          "La contraseña necesita un numero y una letra en mayuscula"}
-        {errors.passwordMax && "La contraseña debe ser más larga"}
-      </HelperText>
+      {errors.passwordEmpty && (
+        <HelperText type="error" visible>
+          Introduzca su contraseña
+        </HelperText>
+      )}
+      {errors.passwordMax && (
+        <HelperText type="error" visible>
+          La contraseña es demasiado larga
+        </HelperText>
+      )}
+      {errors.passwordMin && (
+        <HelperText type="error" visible>
+          La contraseña debe ser más larga
+        </HelperText>
+      )}
+      {errors.passwordInvalid && (
+        <HelperText type="error" visible>
+          La contraseña necesita un número y una letra en mayúscula
+        </HelperText>
+      )}
       <TextInput
         label="Repita la contraseña"
         mode="outlined"
         placeholder="Contraseña"
         value={repeatPassword}
         secureTextEntry={!showPassword}
-        error={errors.passwordFailed}
+        error={errors.passwordEmpty || errors.passwordFailed}
         onChangeText={setRepeatPassword}
         autoCapitalize="none"
         right={
@@ -203,7 +235,10 @@ const RegisterScreen = () => {
           width: "80%",
         }}
       ></TextInput>
-      <HelperText type="error" visible={errors.passwordFailed}>
+      <HelperText
+        type="error"
+        visible={errors.passwordEmpty || errors.passwordFailed}
+      >
         La contraseña no es la misma
       </HelperText>
       <Button
@@ -222,7 +257,7 @@ const RegisterScreen = () => {
         )}
       </Button>
       <Button mode="text" onPress={() => navigation.navigate("Login")}>
-        Inicia Sesión
+        ¿Tienes una cuenta? Inicia Sesión
       </Button>
     </View>
   );
