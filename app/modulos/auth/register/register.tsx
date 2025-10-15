@@ -12,6 +12,7 @@ import { RootStackParamList } from "../../../../App";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, "Register">;
+
 type errorsTypes = {
   notEmail: boolean;
   emailEmpty: boolean;
@@ -53,7 +54,7 @@ const RegisterScreen = () => {
   const handleLogin = () => {
     setIsProcessing(true);
 
-    if (validateForm()) {
+    if (checkErrors()) {
       setIsProcessing(false);
       return;
     }
@@ -61,7 +62,7 @@ const RegisterScreen = () => {
     alert(`Creaste una cuenta con el correo: ${email}`);
   };
 
-  const validateForm = () => {
+  const checkErrors = () : boolean => {
     let newErrors = { ...startErrors };
     if (!email) {
       newErrors.emailEmpty = true;
@@ -111,29 +112,6 @@ const RegisterScreen = () => {
         Crear una cuenta
       </Text>
       <TextInput
-        label="Email"
-        mode="outlined"
-        placeholder="Email"
-        keyboardType="email-address"
-        value={email}
-        onChangeText={setEmail}
-        autoCapitalize="none"
-        error={errors.emailEmpty || errors.notEmail}
-        style={{
-          width: "80%",
-        }}
-      />
-      {errors.emailEmpty && (
-        <HelperText type="error" visible>
-          Introduzca su dirección de email
-        </HelperText>
-      )}
-      {errors.notEmail && (
-        <HelperText type="error" visible>
-          No es un email
-        </HelperText>
-      )}
-      <TextInput
         label="Nombre de Usuario"
         mode="outlined"
         placeholder="Nombre"
@@ -168,6 +146,29 @@ const RegisterScreen = () => {
       {errors.usernameMin && (
         <HelperText type="error" visible>
           El nombre de usuario debe ser más largo
+        </HelperText>
+      )}
+      <TextInput
+        label="Email"
+        mode="outlined"
+        placeholder="Email"
+        keyboardType="email-address"
+        value={email}
+        onChangeText={setEmail}
+        autoCapitalize="none"
+        error={errors.emailEmpty || errors.notEmail}
+        style={{
+          width: "80%",
+        }}
+      />
+      {errors.emailEmpty && (
+        <HelperText type="error" visible>
+          Introduzca su dirección de email
+        </HelperText>
+      )}
+      {errors.notEmail && (
+        <HelperText type="error" visible>
+          No es un email
         </HelperText>
       )}
       <TextInput
