@@ -12,12 +12,13 @@ import RegisterScreen from "./app/modulos/auth/register/register";
 import { MD3DarkTheme, PaperProvider } from "react-native-paper";
 import HomeScreen from "./app/modulos/screens/home/home";
 import CreatePollScreen from "./app/modulos/screens/createPoll/createPoll";
+import Header from "./app/modulos/Components/header/header";
 
 export type RootStackParamList = {
   Login: undefined;
   Register: undefined;
   Home: undefined;
-  CreatePoll : undefined;
+  CreatePoll: undefined;
   RegistroPropietario: undefined;
 };
 
@@ -38,13 +39,17 @@ export default function App() {
         <StatusBar />
         <NavigationContainer theme={DarkTheme}>
           <Stack.Navigator
-            screenOptions={{ headerShown: false }}
+            screenOptions={{ headerShown: true, headerTitleAlign: 'center' , header: (props) => <Header {...props} />}}
             initialRouteName="Home"
           >
-            <Stack.Screen name="Login" component={LoginScreen} />
-            <Stack.Screen name="Register" component={RegisterScreen} />
-            <Stack.Screen name="Home" component={HomeScreen} />
-            <Stack.Screen name="CreatePoll" component={CreatePollScreen} />
+            <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }}/>
+            <Stack.Screen name="Register" component={RegisterScreen} options={{ headerShown: false }}/>
+            <Stack.Screen name="Home" component={HomeScreen} 
+            />
+            <Stack.Screen
+              name="CreatePoll"
+              component={CreatePollScreen}
+            />
           </Stack.Navigator>
         </NavigationContainer>
       </GestureHandlerRootView>

@@ -34,15 +34,15 @@ const HomeScreen = () => {
   const [user, setUser] = useState<User>(userExample);
 
   return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+    <View style={{ flex: 1, alignItems: "center" }}>
       <Avatar.Text
         size={120}
         label={user.name.slice(0, 1)}
-        style={{ marginBottom: 16 }}
+        style={{marginTop: 32, marginBottom: 16 }}
       />
       <View style={{marginBottom: 16}}>
       <Text variant="displayMedium" style={{textAlign : 'center'}}>{`${user.name} ${user.lastName}`}</Text>
-      <Text variant="displaySmall">{user.email}</Text>
+      <Text variant="headlineSmall">{user.email}</Text>
 
       </View>
       <Button
