@@ -64,7 +64,7 @@ const HomeScreen = () => {
           marginBottom: 16,
         }}
       >
-        Explorar encuentas
+        Explorar encuestas
       </Button>
     </View>
   );

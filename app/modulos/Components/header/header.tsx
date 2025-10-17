@@ -19,7 +19,7 @@ const Header = ({ navigation, route, options, back }: any) => {
         <Appbar.BackAction onPress={navigation.goBack} />
       ) : null}
 
-      <Appbar.Content title={<Text variant="displayMedium">VoxPoluli</Text>} />
+      <Appbar.Content title={<Text variant="displayMedium">VoxPopuli</Text>} />
       <Menu
         visible={visible}
         onDismiss={closeMenu}
