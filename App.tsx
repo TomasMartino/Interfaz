@@ -13,6 +13,9 @@ import { MD3DarkTheme, PaperProvider } from "react-native-paper";
 import HomeScreen from "./app/modulos/screens/home/home";
 import CreatePollScreen from "./app/modulos/screens/createPoll/createPoll";
 import Header from "./app/modulos/Components/header/header";
+import { es, registerTranslation } from "react-native-paper-dates";
+
+registerTranslation("es", es);
 
 export type RootStackParamList = {
   Login: undefined;
