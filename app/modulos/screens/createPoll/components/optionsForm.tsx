@@ -1,20 +1,18 @@
 import React, { useState } from "react";
-import { Text, TextInput, Button } from "react-native-paper";
+import { Text, TextInput, Button, HelperText } from "react-native-paper";
 import { option } from "../createPoll";
-import { StyleProp, TextStyle } from "react-native";
+import { StyleProp, StyleSheet, TextStyle } from "react-native";
 
 type props = {
   options: option[];
   setOptions: React.Dispatch<React.SetStateAction<option[]>>;
-  stylesText: StyleProp<TextStyle>;
-  stylesInput: StyleProp<TextStyle>;
+  error: boolean | undefined;
 };
 
 const optionsForm = ({
   options,
   setOptions,
-  stylesText,
-  stylesInput,
+  error = false,
 }: props) => {
   const [isAdding, setIsAdding] = useState(false);
 
@@ -45,16 +43,17 @@ const optionsForm = ({
 
   return (
     <>
-      <Text variant="headlineSmall" style={stylesText}>
+      <Text variant="headlineSmall" style={styles.text}>
         Opciones
       </Text>
-      {options.map((v, i) => {
+      {options.map((v, i, { length }) => {
         return (
           <TextInput
             key={i}
             value={v.optionText}
             mode="outlined"
             placeholder={`Opción ${i + 1}`}
+            error={error}
             onChangeText={(o) => editOption(i, o)}
             right={
               i > 1 ? (
@@ -64,16 +63,19 @@ const optionsForm = ({
                 />
               ) : null
             }
-            style={stylesInput}
+            style={i + 1 !== length ? styles.input : styles.inputLast}
           />
         );
       })}
+      <HelperText type="error" visible={error}>
+        Una de las opciones esta vacia
+      </HelperText>
       <Button
         mode="elevated"
         icon="plus-circle-outline"
         disabled={isAdding}
         onPress={addOption}
-        style={stylesInput}
+        style={styles.input}
       >
         Añadir más opciones
       </Button>
@@ -82,3 +84,16 @@ const optionsForm = ({
 };
 
 export default optionsForm;
+
+const styles = StyleSheet.create({
+  text: {
+    marginBottom: 16,
+  },
+  input: {
+    width: "100%",
+    marginBottom: 16,
+  },
+  inputLast: {
+    width: "100%",
+  },
+});

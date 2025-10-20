@@ -6,14 +6,16 @@ import { DatePickerModal, TimePickerModal } from "react-native-paper-dates";
 type props = {
   label: string;
   value: Date | null;
+  error: boolean;
   setValue: (date: Date | null) => void;
   disablePastDates?: boolean;
   stylesInput: StyleProp<TextStyle>;
 };
 
 const DateTimePicker = ({
-  value,
   label,
+  value,
+  error,
   setValue,
   stylesInput,
   disablePastDates = false,
@@ -35,8 +37,7 @@ const DateTimePicker = ({
     setOpenTime(false);
     if (tempDate) {
       const newDateTime = new Date(tempDate);
-      newDateTime.setHours(params.hours);
-      newDateTime.setMinutes(params.minutes);
+      newDateTime.setHours(params.hours, params.minutes, 0, 0);
       setValue(newDateTime);
     }
   };
@@ -56,6 +57,7 @@ const DateTimePicker = ({
       <TextInput
         label={label}
         placeholder="DD/MM/YYYY hh:mm"
+        error={error}
         style={stylesInput}
         value={
           value
