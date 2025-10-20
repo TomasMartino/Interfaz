@@ -63,6 +63,7 @@ const HomeScreen = () => {
           width: "80%",
           marginBottom: 16,
         }}
+        onPress={() => navigation.navigate('PollInterface')}
       >
         Explorar encuestas
       </Button>

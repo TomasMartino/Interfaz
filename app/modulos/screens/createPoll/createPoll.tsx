@@ -3,9 +3,7 @@ import {
   Text,
   TextInput,
   Button,
-  Switch,
   Divider,
-  useTheme,
   HelperText,
 } from "react-native-paper";
 import { ScrollView, View, StyleSheet } from "react-native";
@@ -14,6 +12,8 @@ import { RootStackParamList } from "../../../../App";
 import { useNavigation } from "@react-navigation/native";
 import DateTimePicker from "../../Components/datetimepicker/datetimepicker";
 import OptionsForm from "./components/optionsForm";
+import NotificationSwitch from "./components/notificationSwitch";
+import AppModal from "../../Components/modal/modal";
 
 type NavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -62,10 +62,12 @@ const CreatePollScreen = () => {
   const [options, setOptions] = useState<option[]>(optionsStart);
   const [notify, setNotify] = useState(false);
   const [errors, setErrors] = useState<errorsTypes>(errorsStart);
+  const [resetVisible, setResetVisible] = useState(false);
+  const [submitVisible, setSubmitVisible] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { colors } = useTheme();
 
   const resetForm = (): void => {
+    setResetVisible(false);
     setTitle("");
     setDescription("");
     setStartTime(null);
@@ -74,6 +76,7 @@ const CreatePollScreen = () => {
   };
 
   const handleSubmit = (): void => {
+    setSubmitVisible(false);
     setLoading(true);
 
     if (findErrors()) {
@@ -117,7 +120,7 @@ const CreatePollScreen = () => {
           mode="outlined"
         />
         <HelperText type="error" visible={errors.titleEmpty}>
-          Introduzca el titulo de la encuesta
+          Introduzca el título de la encuesta
         </HelperText>
         <TextInput
           label="Descripción"
@@ -146,7 +149,7 @@ const CreatePollScreen = () => {
             setValue={setStartTime}
             error={errors.startEmpty || errors.sameDate}
             disablePastDates={true}
-            stylesInput={styles.inputDate}
+            stylesInput={styles.inputHalf}
           />
           <DateTimePicker
             label="Fecha Fin"
@@ -154,7 +157,7 @@ const CreatePollScreen = () => {
             error={errors.endEmpty || errors.sameDate || errors.endBeforeStart}
             setValue={setEndTime}
             disablePastDates={true}
-            stylesInput={styles.inputDate}
+            stylesInput={styles.inputHalf}
           />
         </View>
         <HelperText type="error" visible={errors.startEmpty}>
@@ -175,35 +178,71 @@ const CreatePollScreen = () => {
             La fecha fin no puede ser antes que la fecha inicio
           </HelperText>
         )}
-        <View
-          style={{
-            marginBottom: 16,
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-            borderRadius: 22,
-            paddingLeft: 22,
-            backgroundColor: colors.elevation.level1,
-          }}
-        >
-          <Text onPress={() => setNotify((n) => !n)}>
-            Notificar sobre los resultados
-          </Text>
-          <Switch value={notify} onValueChange={setNotify} />
-        </View>
+        <NotificationSwitch value={notify} setValue={setNotify} />
         <Divider style={styles.button} />
         <Button
           mode="contained"
           style={styles.button}
           loading={loading}
-          onPress={handleSubmit}
+          disabled={loading}
+          onPress={() => setSubmitVisible(true)}
         >
           Crear y publicar encuesta
         </Button>
-        <Button mode="outlined" style={styles.button} onPress={resetForm}>
+        <Button
+          mode="outlined"
+          style={styles.button}
+          disabled={loading}
+          onPress={() => setResetVisible(true)}
+        >
           Restablecer formulario
         </Button>
       </View>
+      <AppModal
+        visible={resetVisible}
+        dismissable={false}
+        onDismiss={() => setResetVisible(false)}
+      >
+        <Text variant="headlineMedium" style={styles.title}>Restablecer formulario</Text>
+        <Text style={styles.text}>
+          ¿Estas seguro que quieres resetear el formulario? {"\n"}
+          Toda la información se va a perder.
+        </Text>
+        <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+          <Button
+            mode="elevated"
+            onPress={() => setResetVisible(false)}
+            style={styles.inputHalf}
+          >
+            Cancelar
+          </Button>
+          <Button mode="contained" onPress={resetForm} style={styles.inputHalf}>
+            Restablecer
+          </Button>
+        </View>
+      </AppModal>
+      <AppModal
+        visible={submitVisible}
+        dismissable={false}
+        onDismiss={() => setSubmitVisible(false)}
+      >
+        <Text variant="headlineMedium" style={styles.title}>Publicar encuesta</Text>
+        <Text style={styles.text}>
+          ¿Estas seguro que quieres publicar la encuesta?
+        </Text>
+        <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+          <Button
+            mode="elevated"
+            onPress={() => setSubmitVisible(false)}
+            style={styles.inputHalf}
+          >
+            Cancelar
+          </Button>
+          <Button mode="contained" onPress={handleSubmit} style={styles.inputHalf}>
+            Publicar
+          </Button>
+        </View>
+      </AppModal>
     </ScrollView>
   );
 };
@@ -230,7 +269,7 @@ const styles = StyleSheet.create({
   input: {
     width: "100%",
   },
-  inputDate: {
+  inputHalf: {
     width: "48%",
   },
   button: {

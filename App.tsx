@@ -14,6 +14,7 @@ import HomeScreen from "./app/modulos/screens/home/home";
 import CreatePollScreen from "./app/modulos/screens/createPoll/createPoll";
 import Header from "./app/modulos/Components/header/header";
 import { es, registerTranslation } from "react-native-paper-dates";
+import PollInterfaceScreen from "./app/modulos/screens/pollInterface/pollInterface";
 
 registerTranslation("es", es);
 
@@ -22,6 +23,8 @@ export type RootStackParamList = {
   Register: undefined;
   Home: undefined;
   CreatePoll: undefined;
+  BrowsePoll: undefined;
+  PollInterface: undefined;
   RegistroPropietario: undefined;
 };
 
@@ -42,17 +45,26 @@ export default function App() {
         <StatusBar />
         <NavigationContainer theme={DarkTheme}>
           <Stack.Navigator
-            screenOptions={{ headerShown: true, headerTitleAlign: 'center' , header: (props) => <Header {...props} />}}
+            screenOptions={{
+              headerShown: true,
+              headerTitleAlign: "center",
+              header: (props) => <Header {...props} />,
+            }}
             initialRouteName="Home"
           >
-            <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }}/>
-            <Stack.Screen name="Register" component={RegisterScreen} options={{ headerShown: false }}/>
-            <Stack.Screen name="Home" component={HomeScreen} 
+            <Stack.Screen
+              name="Login"
+              component={LoginScreen}
+              options={{ headerShown: false }}
             />
             <Stack.Screen
-              name="CreatePoll"
-              component={CreatePollScreen}
+              name="Register"
+              component={RegisterScreen}
+              options={{ headerShown: false }}
             />
+            <Stack.Screen name="Home" component={HomeScreen} />
+            <Stack.Screen name="CreatePoll" component={CreatePollScreen} />
+            <Stack.Screen name="PollInterface" component={PollInterfaceScreen} />
           </Stack.Navigator>
         </NavigationContainer>
       </GestureHandlerRootView>
