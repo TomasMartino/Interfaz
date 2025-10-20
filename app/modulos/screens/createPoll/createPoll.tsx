@@ -117,7 +117,7 @@ const CreatePollScreen = () => {
           mode="outlined"
         />
         <HelperText type="error" visible={errors.titleEmpty}>
-          Introduzca el titulo de la encuenta
+          Introduzca el titulo de la encuesta
         </HelperText>
         <TextInput
           label="Descripción"
@@ -129,7 +129,7 @@ const CreatePollScreen = () => {
           mode="outlined"
         />
         <HelperText type="error" visible={errors.descriptionEmpty}>
-          Introduzca la descripción de la encuenta
+          Introduzca la descripción de la encuesta
         </HelperText>
         <OptionsForm
           options={options}
@@ -158,11 +158,11 @@ const CreatePollScreen = () => {
           />
         </View>
         <HelperText type="error" visible={errors.startEmpty}>
-          Introduzca la fecha inicio de la encuenta
+          Introduzca la fecha inicio de la encuesta
         </HelperText>
         {errors.endEmpty && (
           <HelperText type="error" visible>
-            Introduzca la fecha fin de la encuenta
+            Introduzca la fecha fin de la encuesta
           </HelperText>
         )}
         {errors.sameDate && (
@@ -198,7 +198,7 @@ const CreatePollScreen = () => {
           loading={loading}
           onPress={handleSubmit}
         >
-          Crear y publicar encuenta
+          Crear y publicar encuesta
         </Button>
         <Button mode="outlined" style={styles.button} onPress={resetForm}>
           Restablecer formulario
