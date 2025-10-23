@@ -4,6 +4,7 @@ import { ScrollView, StyleSheet, View } from "react-native";
 import {
   Avatar,
   Button,
+  HelperText,
   Icon,
   MD3DarkTheme,
   RadioButton,
@@ -12,6 +13,7 @@ import {
 } from "react-native-paper";
 import { RootStackParamList } from "../../../../App";
 import { useNavigation } from "@react-navigation/native";
+import AppModal from "../../Components/modal/modal";
 
 type NavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -88,17 +90,11 @@ const PollInterfaceScreen = () => {
   const [poll, setPoll] = useState<Poll>(startPoll);
   const [options, setOptions] = useState<Option[]>(startOp);
   const [user, setUser] = useState(userExample);
-  const [remainingTime, setRemainingTime] = useState<RemainingTime | undefined>(
-      undefined
-    );
-    const [checked, setChecked] = useState<string>("");
-    const [hasVoted, setHasVoted] = useState(false);
-
-  useEffect(() => {
-    diffTime();
-    sortOptions();
-    setInterval(diffTime, 1000);
-  }, []);
+  const [remainingTime, setRemainingTime] = useState<RemainingTime>();
+  const [checked, setChecked] = useState<string>("");
+  const [hasVoted, setHasVoted] = useState(false);
+  const [votingVisible, setVotingVisible] = useState(false);
+  const [error, setError] = useState(false);
 
   const sortOptions = (): void => {
     options.sort((a, b) => a.optionOrder - b.optionOrder);
@@ -108,7 +104,7 @@ const PollInterfaceScreen = () => {
     const currentDate = new Date();
     const diff = poll.endDate.getTime() - currentDate.getTime();
 
-    const totalSeconds = Math.floor(diff / 1000);
+    const totalSeconds = Math.max(0, Math.floor(diff / 1000));
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
 
@@ -118,6 +114,26 @@ const PollInterfaceScreen = () => {
     };
     setRemainingTime(remaining);
   };
+
+  const handleVoting = (): void => {
+    setVotingVisible(false)
+    if (!checked) {
+      setError(true);
+      return;
+    }
+    setError(false)
+    setHasVoted(true);
+    //BackEnd
+  };
+
+  useEffect(() => {
+    diffTime();
+    sortOptions();
+
+    const interval = setInterval(diffTime, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <ScrollView contentContainerStyle={styles.container} style={{ flex: 1 }}>
@@ -169,9 +185,9 @@ const PollInterfaceScreen = () => {
           onValueChange={(newValue: string) => setChecked(newValue)}
           value={checked}
         >
-          {options.map((v, _, { length }) => {
+          {options.map((v, i, { length }) => {
             return (
-              <Surface key={v.optionOrder} style={styles.surface}>
+              <Surface key={v.optionOrder} style={[styles.surface, i + 1 !== length ? null : {marginBottom: 0} ]}>
                 <RadioButton.Item
                   label={v.optionText}
                   value={String(v.optionOrder)}
@@ -181,13 +197,44 @@ const PollInterfaceScreen = () => {
             );
           })}
         </RadioButton.Group>
-        <Button mode="contained" disabled={hasVoted} style={styles.button}>
+        <HelperText type="error" visible={error}>
+          Debes elegir una opción para poder votar
+        </HelperText>
+        <Button mode="contained" disabled={hasVoted} onPress={() => setVotingVisible(true)} style={styles.button}>
           Enviar Voto
         </Button>
         <Button mode="elevated" style={styles.button}>
           Mirar Resultados
         </Button>
       </View>
+      <AppModal
+        visible={votingVisible}
+        dismissable={false}
+        onDismiss={() => setVotingVisible(false)}
+      >
+        <Text variant="headlineMedium" style={styles.title}>
+          Confirmar voto
+        </Text>
+        <Text style={styles.text}>
+          No lo vas a poder revertir el voto
+        </Text>
+        <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+          <Button
+            mode="elevated"
+            onPress={() => setVotingVisible(false)}
+            style={styles.inputHalf}
+          >
+            Cancelar
+          </Button>
+          <Button
+            mode="contained"
+            onPress={handleVoting}
+            style={styles.inputHalf}
+          >
+            Confirmar
+          </Button>
+        </View>
+      </AppModal>
     </ScrollView>
   );
 };
@@ -220,6 +267,9 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderRadius: 20,
     paddingLeft: 22,
+  },
+  inputHalf: {
+    width: "48%",
   },
   textSuface: {
     padding: 12,
