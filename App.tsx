@@ -15,6 +15,7 @@ import CreatePollScreen from "./app/modulos/screens/createPoll/createPoll";
 import Header from "./app/modulos/Components/header/header";
 import { es, registerTranslation } from "react-native-paper-dates";
 import PollInterfaceScreen from "./app/modulos/screens/pollInterface/pollInterface";
+import PollResultsScreen from "./app/modulos/screens/pollResults/pollResults";
 
 registerTranslation("es", es);
 
@@ -25,6 +26,7 @@ export type RootStackParamList = {
   CreatePoll: undefined;
   BrowsePoll: undefined;
   PollInterface: undefined;
+  PollResults : undefined;
   RegistroPropietario: undefined;
 };
 
@@ -65,6 +67,7 @@ export default function App() {
             <Stack.Screen name="Home" component={HomeScreen} />
             <Stack.Screen name="CreatePoll" component={CreatePollScreen} />
             <Stack.Screen name="PollInterface" component={PollInterfaceScreen} />
+            <Stack.Screen name="PollResults" component={PollResultsScreen} />
           </Stack.Navigator>
         </NavigationContainer>
       </GestureHandlerRootView>

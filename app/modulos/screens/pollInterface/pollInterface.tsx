@@ -203,7 +203,7 @@ const PollInterfaceScreen = () => {
         <Button mode="contained" disabled={hasVoted} onPress={() => setVotingVisible(true)} style={styles.button}>
           Enviar Voto
         </Button>
-        <Button mode="elevated" style={styles.button}>
+        <Button mode="elevated" style={styles.button} onPress={() => navigation.navigate("PollResults")}>
           Mirar Resultados
         </Button>
       </View>
