@@ -16,6 +16,7 @@ import Header from "./app/modulos/Components/header/header";
 import { es, registerTranslation } from "react-native-paper-dates";
 import PollInterfaceScreen from "./app/modulos/screens/pollInterface/pollInterface";
 import PollResultsScreen from "./app/modulos/screens/pollResults/pollResults";
+import BrowsePollsScreen from "./app/modulos/screens/browsePolls/browsePolls";
 
 registerTranslation("es", es);
 
@@ -68,6 +69,7 @@ export default function App() {
             <Stack.Screen name="CreatePoll" component={CreatePollScreen} />
             <Stack.Screen name="PollInterface" component={PollInterfaceScreen} />
             <Stack.Screen name="PollResults" component={PollResultsScreen} />
+            <Stack.Screen name="BrowsePoll" component={BrowsePollsScreen}/>
           </Stack.Navigator>
         </NavigationContainer>
       </GestureHandlerRootView>

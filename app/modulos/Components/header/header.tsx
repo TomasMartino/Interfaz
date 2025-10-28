@@ -50,7 +50,7 @@ const Header = ({
         ) : null}
         <Menu.Item
           onPress={() => navigate("Login")}
-          title="Log out"
+          title="Cerrar Sesión"
           leadingIcon="logout"
         />
       </Menu>

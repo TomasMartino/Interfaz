@@ -1,15 +1,12 @@
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { View } from "react-native";
-import {
-  Text,
-  Button,
-  ActivityIndicator,
-  HelperText,
-  Avatar,
-} from "react-native-paper";
+import { View, StyleSheet, ScrollView } from "react-native";
+import { Text, Button, Avatar } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
 import React, { useState } from "react";
 import { RootStackParamList } from "../../../../App";
+import { Poll } from "../browsePolls/browsePolls";
+import BrowsePollsView from "../../Components/browsePollsView/browsePollsView";
+import { pollsStart } from "../browsePolls/data";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, "Home">;
 
@@ -32,43 +29,66 @@ const userExample: User = {
 const HomeScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const [user, setUser] = useState<User>(userExample);
+  const [polls, setPolls] = useState<Poll[]>([]);
 
   return (
-    <View style={{ flex: 1, alignItems: "center" }}>
-      <Avatar.Text
-        size={120}
-        label={user.name.slice(0, 1)}
-        style={{marginTop: 32, marginBottom: 16 }}
-      />
-      <View style={{marginBottom: 16}}>
-      <Text variant="displayMedium" style={{textAlign : 'center'}}>{`${user.name} ${user.lastName}`}</Text>
-      <Text variant="headlineSmall">{user.email}</Text>
-
+    <View style={styles.view}>
+      <View style={{justifyContent: "center", width: "100%", alignItems: "center"}}>
+        <Avatar.Text
+          size={120}
+          label={user.name.slice(0, 1)}
+          style={{ marginTop: 32, marginBottom: 16 }}
+        />
+        <View style={{ marginBottom: 16 }}>
+          <Text
+            variant="displayMedium"
+            style={{ textAlign: "center" }}
+          >{`${user.name} ${user.lastName}`}</Text>
+          <Text variant="headlineSmall">{user.email}</Text>
+        </View>
       </View>
       <Button
         mode="contained"
-        icon='plus-circle-outline'
+        icon="plus-circle-outline"
         style={{
-          width: "80%",
           marginBottom: 16,
         }}
-        onPress={() => navigation.navigate('CreatePoll')}
+        onPress={() => navigation.navigate("CreatePoll")}
       >
         Crear votación
       </Button>
       <Button
         mode="elevated"
-        icon='chart-box-outline'
+        icon="chart-box-outline"
         style={{
-          width: "80%",
           marginBottom: 16,
         }}
-        onPress={() => navigation.navigate('PollInterface')}
+        onPress={() => navigation.navigate("BrowsePoll")}
       >
         Explorar encuestas
       </Button>
+      <Text variant="headlineSmall" style={[styles.margin, { textAlign: "center"}]}>Mis Encuestas</Text>
+      <ScrollView style={styles.container}>
+        <BrowsePollsView polls={polls} navigation={navigation} />
+      </ScrollView>
     </View>
   );
 };
 
 export default HomeScreen;
+
+const styles = StyleSheet.create({
+  container: {
+    flexGrow: 1,
+    width: "100%",
+  },
+  view: {
+    flex: 1,
+    width: "100%",
+    paddingHorizontal: 16,
+    alignItems: "stretch",
+  },
+  margin: {
+    marginBottom: 16
+  }
+});
