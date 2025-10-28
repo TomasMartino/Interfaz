@@ -1,15 +1,26 @@
 import React, { useState } from "react";
-import { Appbar, Divider, IconButton, Menu } from "react-native-paper";
+import { Appbar, Divider, Drawer, IconButton, Menu } from "react-native-paper";
 import { Text } from "react-native-paper";
 import { getHeaderTitle } from "@react-navigation/elements";
+import { NativeStackHeaderProps } from "@react-navigation/native-stack";
 
-const Header = ({ navigation, route, options, back }: any) => {
+const Header = ({
+  navigation,
+  route,
+  options,
+  back,
+}: NativeStackHeaderProps) => {
   const title = getHeaderTitle(options, route.name);
   const [visible, setVisible] = useState(false);
 
-  const openMenu = () => setVisible(true);
+  const navigate = (route: string): void => {
+    navigation.navigate(route);
+    closeMenu();
+  };
 
-  const closeMenu = () => setVisible(false);
+  const openMenu = (): void => setVisible(true);
+
+  const closeMenu = (): void => setVisible(false);
 
   return (
     <Appbar.Header
@@ -24,27 +35,23 @@ const Header = ({ navigation, route, options, back }: any) => {
         visible={visible}
         onDismiss={closeMenu}
         anchor={
-          <IconButton
-            icon={visible ? "menu-close" : "menu"}
-            iconColor="white"
-            onPress={openMenu}
-          />
+          <IconButton icon={"menu"} iconColor="white" onPress={openMenu} />
         }
       >
-        {back ? (
-          <Menu.Item
-            onPress={() => navigation.navigate("home")}
-            title="Item 1"
-          />
+        {(back && title !== "Home") ?  (
+          <>
+            <Menu.Item
+              onPress={() => navigate("Home")}
+              title="Hogar"
+              leadingIcon={"home"}
+            />
+            <Divider />
+          </>
         ) : null}
-        <Menu.Item onPress={() => {}} title="Item 2" />
-        <Divider />
         <Menu.Item
-          onPress={() => {
-            closeMenu();
-            navigation.navigate("Login");
-          }}
+          onPress={() => navigate("Login")}
           title="Log out"
+          leadingIcon="logout"
         />
       </Menu>
     </Appbar.Header>
