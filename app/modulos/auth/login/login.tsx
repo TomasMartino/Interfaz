@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View } from "react-native";
+import { View, Alert } from "react-native";
 import {
   Text,
   TextInput,
@@ -8,19 +8,19 @@ import {
   HelperText,
 } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
-import { RootStackParamList } from "../../../../App";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { RootStackParamList } from "../../../../App";
 import { supabase } from "../../../../backend/server/supabase";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, "Login">;
 
-type errorsTypes = {
+type Errors = {
   usernameEmpty: boolean;
   passwordEmpty: boolean;
   credentialsFailed: boolean;
 };
 
-const startErrors: errorsTypes = {
+const initialErrors: Errors = {
   usernameEmpty: false,
   passwordEmpty: false,
   credentialsFailed: false,
@@ -32,37 +32,39 @@ const LoginScreen = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [errors, setErrors] = useState<errorsTypes>(startErrors);
+  const [errors, setErrors] = useState<Errors>(initialErrors);
 
   const handleLogin = async () => {
     setIsProcessing(true);
-    setErrors(startErrors);
+    setErrors(initialErrors);
 
     if (checkErrors()) {
       setIsProcessing(false);
       return;
     }
 
-
     try {
       let emailToUse = usernameOrEmail;
 
-     
+      // Si no es un email, buscamos el email asociado al username
       if (!/\S+@\S+\.\S+/.test(usernameOrEmail)) {
         const { data: userData, error: userError } = await supabase
           .from("Users")
           .select("email, active")
           .eq("username", usernameOrEmail)
-          .single();
+          .maybeSingle();
 
         if (userError || !userData) {
-          setErrors({ ...startErrors, credentialsFailed: true });
+          setErrors({ ...initialErrors, credentialsFailed: true });
           setIsProcessing(false);
           return;
         }
 
         if (!userData.active) {
-          alert("Tu cuenta no está activa. Verifica tu correo antes de iniciar sesión.");
+          Alert.alert(
+            "Cuenta inactiva",
+            "Tu cuenta no está activa. Verifica tu correo antes de iniciar sesión."
+          );
           setIsProcessing(false);
           return;
         }
@@ -70,30 +72,37 @@ const LoginScreen = () => {
         emailToUse = userData.email;
       }
 
-     
+      // Intentar login
       const { data, error } = await supabase.auth.signInWithPassword({
         email: emailToUse,
         password,
       });
 
       if (error || !data.user) {
-        setErrors({ ...startErrors, credentialsFailed: true });
+        if (error?.message?.includes("Email not confirmed")) {
+          Alert.alert(
+            "Correo no verificado",
+            "Por favor, verifica tu correo electrónico antes de iniciar sesión."
+          );
+        } else {
+          setErrors({ ...initialErrors, credentialsFailed: true });
+        }
         setIsProcessing(false);
         return;
       }
 
-      alert("✅ Sesión iniciada correctamente");
+      // Si llega acá, todo bien
+      Alert.alert("✅ Sesión iniciada correctamente");
       navigation.navigate("Home");
     } catch (err: any) {
-      alert("Error de conexión: " + (err.message ?? err));
+      Alert.alert("Error de conexión", err.message ?? String(err));
     } finally {
       setIsProcessing(false);
     }
-
   };
 
   const checkErrors = (): boolean => {
-    let newErrors = { ...startErrors };
+    const newErrors = { ...initialErrors };
 
     if (!usernameOrEmail) newErrors.usernameEmpty = true;
     if (!password) newErrors.passwordEmpty = true;
@@ -108,7 +117,6 @@ const LoginScreen = () => {
         Iniciar Sesión
       </Text>
 
-      
       <TextInput
         label="Usuario o Email"
         mode="outlined"
@@ -123,7 +131,6 @@ const LoginScreen = () => {
         Introduzca su usuario o email
       </HelperText>
 
-      
       <TextInput
         label="Contraseña"
         mode="outlined"
@@ -147,6 +154,7 @@ const LoginScreen = () => {
       <HelperText type="error" visible={errors.credentialsFailed}>
         Credenciales incorrectas o cuenta no verificada
       </HelperText>
+
       <Button
         mode="contained"
         style={{ width: "80%", marginBottom: 16 }}

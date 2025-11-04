@@ -14,6 +14,7 @@ import DateTimePicker from "../../Components/datetimepicker/datetimepicker";
 import OptionsForm from "./components/optionsForm";
 import NotificationSwitch from "./components/notificationSwitch";
 import AppModal from "../../Components/modal/modal";
+import { supabase } from "../../../../backend/server/supabase";
 
 type NavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -25,12 +26,8 @@ export type option = {
 };
 
 const optionsStart: option[] = [
-  {
-    optionText: "",
-  },
-  {
-    optionText: "",
-  },
+  { optionText: "" },
+  { optionText: "" },
 ];
 
 type errorsTypes = {
@@ -75,18 +72,6 @@ const CreatePollScreen = () => {
     setOptions(optionsStart);
   };
 
-  const handleSubmit = (): void => {
-    setSubmitVisible(false);
-    setLoading(true);
-
-    if (findErrors()) {
-      setLoading(false);
-      return;
-    }
-
-    alert(`Exito al crear ${title}`);
-  };
-
   const findErrors = (): boolean => {
     let foundErrors: errorsTypes = { ...errorsStart };
     if (!title) foundErrors.titleEmpty = true;
@@ -96,13 +81,70 @@ const CreatePollScreen = () => {
       foundErrors.endEmpty = !endTime;
     } else {
       if (endTime < startTime) foundErrors.endBeforeStart = true;
-      if (endTime.getTime() == startTime.getTime()) foundErrors.sameDate = true;
+      if (endTime.getTime() === startTime.getTime()) foundErrors.sameDate = true;
     }
-    foundErrors.optionsEmpty = options.some((o) => o.optionText == "");
-
+    foundErrors.optionsEmpty = options.some((o) => o.optionText.trim() === "");
     setErrors(foundErrors);
-
     return Object.values(foundErrors).includes(true);
+  };
+
+  const handleSubmit = async (): Promise<void> => {
+    setSubmitVisible(false);
+    setLoading(true);
+
+    if (findErrors()) {
+      setLoading(false);
+      return;
+    }
+
+    try {
+      
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      if (userError || !userData?.user) {
+        alert("⚠️ No hay sesión activa");
+        setLoading(false);
+        return;
+      }
+
+      
+      const { data: pollData, error: pollError } = await supabase
+        .from("Poll")
+        .insert([
+          {
+            title,
+            description,
+            start_time: startTime?.toISOString(),
+            end_time: endTime?.toISOString(),
+            status: "active",
+            creator_id_new: userData.user.id,
+          },
+        ])
+        .select("id")
+        .single();
+
+      if (pollError) throw pollError;
+
+      
+      const optionsToInsert = options.map((opt, index) => ({
+        option_text: opt.optionText.trim(),
+        option_order: index + 1,
+        poll_id: pollData.id,
+      }));
+
+      const { error: optionError } = await supabase
+        .from("Option")
+        .insert(optionsToInsert);
+
+      if (optionError) throw optionError;
+
+      alert(`✅ Encuesta "${title}" creada correctamente`);
+      resetForm();
+    } catch (err: any) {
+      console.error("Error al crear encuesta:", err.message);
+      alert("❌ Error al crear la encuesta");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -111,8 +153,9 @@ const CreatePollScreen = () => {
         <Text variant="displayMedium" style={styles.title}>
           Crear Encuesta
         </Text>
+
         <TextInput
-          label="Titulo"
+          label="Título"
           value={title}
           onChangeText={setTitle}
           error={errors.titleEmpty}
@@ -122,33 +165,37 @@ const CreatePollScreen = () => {
         <HelperText type="error" visible={errors.titleEmpty}>
           Introduzca el título de la encuesta
         </HelperText>
+
         <TextInput
           label="Descripción"
           value={description}
           onChangeText={setDescription}
           error={errors.descriptionEmpty}
-          multiline={true}
+          multiline
           style={styles.input}
           mode="outlined"
         />
         <HelperText type="error" visible={errors.descriptionEmpty}>
           Introduzca la descripción de la encuesta
         </HelperText>
+
         <OptionsForm
           options={options}
           setOptions={setOptions}
           error={errors.optionsEmpty}
         />
+
         <Text variant="headlineSmall" style={styles.text}>
           Programar encuesta
         </Text>
+
         <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
           <DateTimePicker
             label="Fecha Inicio"
             value={startTime}
             setValue={setStartTime}
             error={errors.startEmpty || errors.sameDate}
-            disablePastDates={true}
+            disablePastDates
             stylesInput={styles.inputHalf}
           />
           <DateTimePicker
@@ -156,13 +203,16 @@ const CreatePollScreen = () => {
             value={endTime}
             error={errors.endEmpty || errors.sameDate || errors.endBeforeStart}
             setValue={setEndTime}
-            disablePastDates={true}
+            disablePastDates
             stylesInput={styles.inputHalf}
           />
         </View>
-        <HelperText type="error" visible={errors.startEmpty}>
-          Introduzca la fecha inicio de la encuesta
-        </HelperText>
+
+        {errors.startEmpty && (
+          <HelperText type="error" visible>
+            Introduzca la fecha inicio de la encuesta
+          </HelperText>
+        )}
         {errors.endEmpty && (
           <HelperText type="error" visible>
             Introduzca la fecha fin de la encuesta
@@ -170,7 +220,7 @@ const CreatePollScreen = () => {
         )}
         {errors.sameDate && (
           <HelperText type="error" visible>
-            La fecha inicio y la fecha fin no puede ser la misma
+            La fecha inicio y la fecha fin no pueden ser la misma
           </HelperText>
         )}
         {errors.endBeforeStart && (
@@ -178,8 +228,11 @@ const CreatePollScreen = () => {
             La fecha fin no puede ser antes que la fecha inicio
           </HelperText>
         )}
+
         <NotificationSwitch value={notify} setValue={setNotify} />
+
         <Divider style={styles.button} />
+
         <Button
           mode="contained"
           style={styles.button}
@@ -189,6 +242,7 @@ const CreatePollScreen = () => {
         >
           Crear y publicar encuesta
         </Button>
+
         <Button
           mode="outlined"
           style={styles.button}
@@ -198,15 +252,19 @@ const CreatePollScreen = () => {
           Restablecer formulario
         </Button>
       </View>
+
+      {/* Modal reset */}
       <AppModal
         visible={resetVisible}
         dismissable={false}
         onDismiss={() => setResetVisible(false)}
       >
-        <Text variant="headlineMedium" style={styles.title}>Restablecer formulario</Text>
+        <Text variant="headlineMedium" style={styles.title}>
+          Restablecer formulario
+        </Text>
         <Text style={styles.text}>
-          ¿Estas seguro que quieres resetear el formulario? {"\n"}
-          Toda la información se va a perder.
+          ¿Estás seguro que quieres resetear el formulario? {"\n"}
+          Toda la información se perderá.
         </Text>
         <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
           <Button
@@ -221,14 +279,18 @@ const CreatePollScreen = () => {
           </Button>
         </View>
       </AppModal>
+
+      {/* Modal publicar */}
       <AppModal
         visible={submitVisible}
         dismissable={false}
         onDismiss={() => setSubmitVisible(false)}
       >
-        <Text variant="headlineMedium" style={styles.title}>Publicar encuesta</Text>
+        <Text variant="headlineMedium" style={styles.title}>
+          Publicar encuesta
+        </Text>
         <Text style={styles.text}>
-          ¿Estas seguro que quieres publicar la encuesta?
+          ¿Estás seguro que quieres publicar la encuesta?
         </Text>
         <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
           <Button

@@ -77,13 +77,13 @@ const RegisterScreen = () => {
 
       // Guardar datos del usuario en la tabla "users"
       if (user) {
-        const { error: insertError } = await supabase.from("Users").insert([
+        const { error: insertError } = await supabase.from("users").insert([
           {
             id: user.id,
-            name: username,
+            username: username,
             email,
             registration_date: new Date(),
-            active: false,
+            
           },
         ]);
 
