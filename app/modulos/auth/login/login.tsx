@@ -43,6 +43,7 @@ const LoginScreen = () => {
       return;
     }
 
+
     try {
       let emailToUse = usernameOrEmail;
 
@@ -88,6 +89,7 @@ const LoginScreen = () => {
     } finally {
       setIsProcessing(false);
     }
+
   };
 
   const checkErrors = (): boolean => {

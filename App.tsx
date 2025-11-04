@@ -1,5 +1,5 @@
 import React from "react";
-import { NavigationContainer } from "@react-navigation/native";
+import { DarkTheme, NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 import { useEffect } from "react";
@@ -8,11 +8,26 @@ import * as NavigationBar from "expo-navigation-bar";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { StatusBar } from "react-native";
 import LoginScreen from "./app/modulos/auth/login/login";
-import RegisterScreen from "./app/modulos/auth/register/register"
+import RegisterScreen from "./app/modulos/auth/register/register";
+import { MD3DarkTheme, PaperProvider } from "react-native-paper";
+import HomeScreen from "./app/modulos/screens/home/home";
+import CreatePollScreen from "./app/modulos/screens/createPoll/createPoll";
+import Header from "./app/modulos/Components/header/header";
+import { es, registerTranslation } from "react-native-paper-dates";
+import PollInterfaceScreen from "./app/modulos/screens/pollInterface/pollInterface";
+import PollResultsScreen from "./app/modulos/screens/pollResults/pollResults";
+import BrowsePollsScreen from "./app/modulos/screens/browsePolls/browsePolls";
+
+registerTranslation("es", es);
 
 export type RootStackParamList = {
   Login: undefined;
-  Register : undefined;
+  Register: undefined;
+  Home: undefined;
+  CreatePoll: undefined;
+  BrowsePoll: undefined;
+  PollInterface: undefined;
+  PollResults : undefined;
   RegistroPropietario: undefined;
 };
 
@@ -28,17 +43,36 @@ export default function App() {
     return () => clearTimeout(timeout);
   }, []);
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <StatusBar />
-      <NavigationContainer>
-        <Stack.Navigator
-          screenOptions={{ headerShown: false }}
-          initialRouteName="Login"
-        >
-          <Stack.Screen name="Login" component={LoginScreen} />
-          <Stack.Screen name="Register" component={RegisterScreen} />
-        </Stack.Navigator>
-      </NavigationContainer>
-    </GestureHandlerRootView>
+    <PaperProvider theme={MD3DarkTheme}>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <StatusBar />
+        <NavigationContainer theme={DarkTheme}>
+          <Stack.Navigator
+            screenOptions={{
+              headerShown: true,
+              headerTitleAlign: "center",
+              header: (props) => <Header {...props} />,
+            }}
+            initialRouteName="Home"
+          >
+            <Stack.Screen
+              name="Login"
+              component={LoginScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="Register"
+              component={RegisterScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen name="Home" component={HomeScreen} />
+            <Stack.Screen name="CreatePoll" component={CreatePollScreen} />
+            <Stack.Screen name="PollInterface" component={PollInterfaceScreen} />
+            <Stack.Screen name="PollResults" component={PollResultsScreen} />
+            <Stack.Screen name="BrowsePoll" component={BrowsePollsScreen}/>
+          </Stack.Navigator>
+        </NavigationContainer>
+      </GestureHandlerRootView>
+    </PaperProvider>
   );
 }
