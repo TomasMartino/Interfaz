@@ -42,6 +42,7 @@ const LoginScreen = () => {
     }
     
     alert(`Login con correo: ${username}`);
+    navigation.navigate('Home');
   };
 
   const checkErrors = (): boolean => {
