@@ -54,6 +54,35 @@ const RegisterScreen = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [errors, setErrors] = useState<errorsTypes>(startErrors);
 
+  const checkErrors = (): boolean => {
+    let newErrors = { ...startErrors };
+
+    // 🔹 Email
+    if (!email) newErrors.emailEmpty = true;
+    else if (!/\S+@\S+\.\S+/.test(email)) newErrors.notEmail = true;
+
+    // 🔹 Username
+    if (!username) newErrors.usernameEmpty = true;
+    else {
+      if (/[^a-zA-Z0-9_]/.test(username)) newErrors.usernameInvalid = true;
+      if (username.length > 25) newErrors.usernameMax = true;
+      if (username.length < 4) newErrors.usernameMin = true;
+    }
+
+    // 🔹 Password
+    if (!password) newErrors.passwordEmpty = true;
+    else {
+      if (password.length > 32) newErrors.passwordMax = true;
+      if (password.length < 8) newErrors.passwordMin = true;
+      if (!/^(?=.*[A-Z])(?=.*\d).+$/.test(password))
+        newErrors.passwordInvalid = true;
+      if (password !== repeatPassword) newErrors.passwordFailed = true;
+    }
+
+    setErrors(newErrors);
+    return Object.values(newErrors).includes(true);
+  };
+
   const handleRegister = async () => {
     setIsProcessing(true);
 
@@ -63,7 +92,7 @@ const RegisterScreen = () => {
     }
 
     try {
-      // Crear usuario en Supabase Auth
+      // 🔹 Crear usuario en Supabase Auth
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -76,66 +105,24 @@ const RegisterScreen = () => {
       }
 
       const user = data.user;
-
-      // Guardar datos del usuario en la tabla "Users"
-      if (user) {
-        const { error: insertError } = await supabase.from("Users").insert([
-          {
-            id: user.id,
-            username: username,
-            email,
-            registration_date: new Date(),
-          },
-        ]);
-
-        if (insertError) {
-          alert("Error al guardar en la base de datos: " + insertError.message);
-          setIsProcessing(false);
-          return;
-        }
-
-        // ✅ Guardar email y username en memoria
-        await AsyncStorage.setItem("userEmail", email);
-        await AsyncStorage.setItem("username", username);
+      if (!user) {
+        alert("No se pudo crear el usuario");
+        setIsProcessing(false);
+        return;
       }
 
-      alert("✅ Cuenta creada. Revisa tu correo para verificarla.");
-      navigation.navigate("Login");
-    } catch (err: any) {
-      alert("Error de conexión: " + (err.message ?? err));
-    } finally {
+      // 🔹 Guardar datos en AsyncStorage
+      await AsyncStorage.setItem("userEmail", email);
+      await AsyncStorage.setItem("username", username);
+      await AsyncStorage.setItem("userId", user.id);
+
+      setIsProcessing(false);
+      navigation.navigate("Login"); // ir a Login o Home
+    } catch (err) {
+      console.error("Error registrando usuario:", err);
+      alert("Ocurrió un error, intente de nuevo");
       setIsProcessing(false);
     }
-  };
-
-  const checkErrors = (): boolean => {
-    let newErrors = { ...startErrors };
-
-    // Validación Email
-    if (!email) newErrors.emailEmpty = true;
-    else if (!/\S+@\S+\.\S+/.test(email)) newErrors.notEmail = true;
-
-    // Validación Username
-    if (!username) newErrors.usernameEmpty = true;
-    else {
-      if (/[!@#$%^&*()\-+={}[\]:;"'<>,.?\/|\\]/.test(username))
-        newErrors.usernameInvalid = true;
-      if (username.length >= 25) newErrors.usernameMax = true;
-      if (username.length <= 4) newErrors.usernameMin = true;
-    }
-
-    // Validación Password
-    if (!password) newErrors.passwordEmpty = true;
-    else {
-      if (password.length >= 32) newErrors.passwordMax = true;
-      if (password.length <= 8) newErrors.passwordMin = true;
-      if (!/^(?=.*[A-Z])(?=.*\d).+$/.test(password))
-        newErrors.passwordInvalid = true;
-      if (password !== repeatPassword) newErrors.passwordFailed = true;
-    }
-
-    setErrors(newErrors);
-    return Object.values(newErrors).includes(true);
   };
 
   return (
@@ -168,26 +155,10 @@ const RegisterScreen = () => {
               errors.usernameMin
             }
           />
-          {errors.usernameEmpty && (
-            <HelperText type="error" visible>
-              Introduzca su nombre de usuario
-            </HelperText>
-          )}
-          {errors.usernameInvalid && (
-            <HelperText type="error" visible>
-              El nombre de usuario no puede tener caracteres especiales
-            </HelperText>
-          )}
-          {errors.usernameMax && (
-            <HelperText type="error" visible>
-              El nombre de usuario es demasiado largo
-            </HelperText>
-          )}
-          {errors.usernameMin && (
-            <HelperText type="error" visible>
-              El nombre de usuario debe ser más largo
-            </HelperText>
-          )}
+          {errors.usernameEmpty && <HelperText type="error" visible>Introduzca su nombre de usuario</HelperText>}
+          {errors.usernameInvalid && <HelperText type="error" visible>El nombre de usuario no puede tener caracteres especiales</HelperText>}
+          {errors.usernameMax && <HelperText type="error" visible>El nombre de usuario es demasiado largo</HelperText>}
+          {errors.usernameMin && <HelperText type="error" visible>El nombre de usuario debe ser más largo</HelperText>}
         </View>
 
         {/* Email */}
@@ -202,16 +173,8 @@ const RegisterScreen = () => {
             autoCapitalize="none"
             error={errors.emailEmpty || errors.notEmail}
           />
-          {errors.emailEmpty && (
-            <HelperText type="error" visible>
-              Introduzca su dirección de email
-            </HelperText>
-          )}
-          {errors.notEmail && (
-            <HelperText type="error" visible>
-              No es un email válido
-            </HelperText>
-          )}
+          {errors.emailEmpty && <HelperText type="error" visible>Introduzca su dirección de email</HelperText>}
+          {errors.notEmail && <HelperText type="error" visible>No es un email válido</HelperText>}
         </View>
 
         {/* Contraseña */}
@@ -231,33 +194,12 @@ const RegisterScreen = () => {
               errors.passwordMax ||
               errors.passwordMin
             }
-            right={
-              <TextInput.Icon
-                icon={showPassword ? "eye" : "eye-off"}
-                onPress={() => setShowPassword(!showPassword)}
-              />
-            }
+            right={<TextInput.Icon icon={showPassword ? "eye" : "eye-off"} onPress={() => setShowPassword(!showPassword)} />}
           />
-          {errors.passwordEmpty && (
-            <HelperText type="error" visible>
-              Introduzca su contraseña
-            </HelperText>
-          )}
-          {errors.passwordMin && (
-            <HelperText type="error" visible>
-              La contraseña debe ser más larga
-            </HelperText>
-          )}
-          {errors.passwordMax && (
-            <HelperText type="error" visible>
-              La contraseña es demasiado larga
-            </HelperText>
-          )}
-          {errors.passwordInvalid && (
-            <HelperText type="error" visible>
-              La contraseña necesita un número y una letra mayúscula
-            </HelperText>
-          )}
+          {errors.passwordEmpty && <HelperText type="error" visible>Introduzca su contraseña</HelperText>}
+          {errors.passwordMin && <HelperText type="error" visible>La contraseña debe ser más larga</HelperText>}
+          {errors.passwordMax && <HelperText type="error" visible>La contraseña es demasiado larga</HelperText>}
+          {errors.passwordInvalid && <HelperText type="error" visible>La contraseña necesita un número y una letra mayúscula</HelperText>}
         </View>
 
         {/* Repetir contraseña */}
@@ -271,18 +213,9 @@ const RegisterScreen = () => {
             onChangeText={setRepeatPassword}
             autoCapitalize="none"
             error={errors.passwordEmpty || errors.passwordFailed}
-            right={
-              <TextInput.Icon
-                icon={showPassword ? "eye" : "eye-off"}
-                onPress={() => setShowPassword(!showPassword)}
-              />
-            }
+            right={<TextInput.Icon icon={showPassword ? "eye" : "eye-off"} onPress={() => setShowPassword(!showPassword)} />}
           />
-          {errors.passwordFailed && (
-            <HelperText type="error" visible>
-              La contraseña no coincide
-            </HelperText>
-          )}
+          {errors.passwordFailed && <HelperText type="error" visible>La contraseña no coincide</HelperText>}
         </View>
 
         {/* Botón Registrar */}
@@ -292,11 +225,7 @@ const RegisterScreen = () => {
           onPress={handleRegister}
           disabled={isProcessing}
         >
-          {isProcessing ? (
-            <ActivityIndicator animating color="white" />
-          ) : (
-            "Registrar"
-          )}
+          {isProcessing ? <ActivityIndicator animating color="white" /> : "Registrar"}
         </Button>
 
         <Button mode="text" onPress={() => navigation.navigate("Login")}>
