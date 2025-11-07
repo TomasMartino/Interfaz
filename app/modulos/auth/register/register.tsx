@@ -12,6 +12,7 @@ import { RootStackParamList } from "../../../../App";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { supabase } from "../../../../backend/server/supabase";
 import GradientBackground from "../../Components/gradientBackground/gradientBackground";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, "Register">;
 
@@ -84,7 +85,6 @@ const RegisterScreen = () => {
             username: username,
             email,
             registration_date: new Date(),
-
           },
         ]);
 
@@ -93,6 +93,10 @@ const RegisterScreen = () => {
           setIsProcessing(false);
           return;
         }
+
+        // ✅ Guardar email y username en memoria
+        await AsyncStorage.setItem("userEmail", email);
+        await AsyncStorage.setItem("username", username);
       }
 
       alert("✅ Cuenta creada. Revisa tu correo para verificarla.");
@@ -114,7 +118,8 @@ const RegisterScreen = () => {
     // Validación Username
     if (!username) newErrors.usernameEmpty = true;
     else {
-      if (/[!@#$%^&*()\-+={}[\]:;"'<>,.?\/|\\]/.test(username)) newErrors.usernameInvalid = true;
+      if (/[!@#$%^&*()\-+={}[\]:;"'<>,.?\/|\\]/.test(username))
+        newErrors.usernameInvalid = true;
       if (username.length >= 25) newErrors.usernameMax = true;
       if (username.length <= 4) newErrors.usernameMin = true;
     }
@@ -124,7 +129,8 @@ const RegisterScreen = () => {
     else {
       if (password.length >= 32) newErrors.passwordMax = true;
       if (password.length <= 8) newErrors.passwordMin = true;
-      if (!/^(?=.*[A-Z])(?=.*\d).+$/.test(password)) newErrors.passwordInvalid = true;
+      if (!/^(?=.*[A-Z])(?=.*\d).+$/.test(password))
+        newErrors.passwordInvalid = true;
       if (password !== repeatPassword) newErrors.passwordFailed = true;
     }
 
@@ -134,142 +140,164 @@ const RegisterScreen = () => {
 
   return (
     <GradientBackground>
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 16 }}>
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          padding: 16,
+        }}
+      >
         <Text variant="headlineMedium" style={{ marginBottom: 24 }}>
           Crear una cuenta
         </Text>
 
-      {/* Nombre de Usuario */}
-      <View style={{ width: "80%", marginBottom: 12 }}>
-        <TextInput
-          label="Nombre de Usuario"
-          mode="outlined"
-          placeholder="Nombre"
-          value={username}
-          onChangeText={setUsername}
-          autoCapitalize="none"
-          error={errors.usernameEmpty || errors.usernameInvalid || errors.usernameMax || errors.usernameMin}
-        />
-        {errors.usernameEmpty && (
-          <HelperText type="error" visible>
-            Introduzca su nombre de usuario
-          </HelperText>
-        )}
-        {errors.usernameInvalid && (
-          <HelperText type="error" visible>
-            El nombre de usuario no puede tener caracteres especiales
-          </HelperText>
-        )}
-        {errors.usernameMax && (
-          <HelperText type="error" visible>
-            El nombre de usuario es demasiado largo
-          </HelperText>
-        )}
-        {errors.usernameMin && (
-          <HelperText type="error" visible>
-            El nombre de usuario debe ser más largo
-          </HelperText>
-        )}
-      </View>
+        {/* Nombre de Usuario */}
+        <View style={{ width: "80%", marginBottom: 12 }}>
+          <TextInput
+            label="Nombre de Usuario"
+            mode="outlined"
+            placeholder="Nombre"
+            value={username}
+            onChangeText={setUsername}
+            autoCapitalize="none"
+            error={
+              errors.usernameEmpty ||
+              errors.usernameInvalid ||
+              errors.usernameMax ||
+              errors.usernameMin
+            }
+          />
+          {errors.usernameEmpty && (
+            <HelperText type="error" visible>
+              Introduzca su nombre de usuario
+            </HelperText>
+          )}
+          {errors.usernameInvalid && (
+            <HelperText type="error" visible>
+              El nombre de usuario no puede tener caracteres especiales
+            </HelperText>
+          )}
+          {errors.usernameMax && (
+            <HelperText type="error" visible>
+              El nombre de usuario es demasiado largo
+            </HelperText>
+          )}
+          {errors.usernameMin && (
+            <HelperText type="error" visible>
+              El nombre de usuario debe ser más largo
+            </HelperText>
+          )}
+        </View>
 
-      {/* Email */}
-      <View style={{ width: "80%", marginBottom: 12 }}>
-        <TextInput
-          label="Email"
-          mode="outlined"
-          placeholder="Email"
-          keyboardType="email-address"
-          value={email}
-          onChangeText={setEmail}
-          autoCapitalize="none"
-          error={errors.emailEmpty || errors.notEmail}
-        />
-        {errors.emailEmpty && (
-          <HelperText type="error" visible>
-            Introduzca su dirección de email
-          </HelperText>
-        )}
-        {errors.notEmail && (
-          <HelperText type="error" visible>
-            No es un email válido
-          </HelperText>
-        )}
-      </View>
+        {/* Email */}
+        <View style={{ width: "80%", marginBottom: 12 }}>
+          <TextInput
+            label="Email"
+            mode="outlined"
+            placeholder="Email"
+            keyboardType="email-address"
+            value={email}
+            onChangeText={setEmail}
+            autoCapitalize="none"
+            error={errors.emailEmpty || errors.notEmail}
+          />
+          {errors.emailEmpty && (
+            <HelperText type="error" visible>
+              Introduzca su dirección de email
+            </HelperText>
+          )}
+          {errors.notEmail && (
+            <HelperText type="error" visible>
+              No es un email válido
+            </HelperText>
+          )}
+        </View>
 
-      {/* Contraseña */}
-      <View style={{ width: "80%", marginBottom: 12 }}>
-        <TextInput
-          label="Contraseña"
-          mode="outlined"
-          placeholder="Contraseña"
-          value={password}
-          secureTextEntry={!showPassword}
-          onChangeText={setPassword}
-          autoCapitalize="none"
-          error={errors.passwordEmpty || errors.passwordFailed || errors.passwordInvalid || errors.passwordMax || errors.passwordMin}
-          right={
-            <TextInput.Icon
-              icon={showPassword ? "eye" : "eye-off"}
-              onPress={() => setShowPassword(!showPassword)}
-            />
-          }
-        />
-        {errors.passwordEmpty && (
-          <HelperText type="error" visible>
-            Introduzca su contraseña
-          </HelperText>
-        )}
-        {errors.passwordMin && (
-          <HelperText type="error" visible>
-            La contraseña debe ser más larga
-          </HelperText>
-        )}
-        {errors.passwordMax && (
-          <HelperText type="error" visible>
-            La contraseña es demasiado larga
-          </HelperText>
-        )}
-        {errors.passwordInvalid && (
-          <HelperText type="error" visible>
-            La contraseña necesita un número y una letra mayúscula
-          </HelperText>
-        )}
-      </View>
+        {/* Contraseña */}
+        <View style={{ width: "80%", marginBottom: 12 }}>
+          <TextInput
+            label="Contraseña"
+            mode="outlined"
+            placeholder="Contraseña"
+            value={password}
+            secureTextEntry={!showPassword}
+            onChangeText={setPassword}
+            autoCapitalize="none"
+            error={
+              errors.passwordEmpty ||
+              errors.passwordFailed ||
+              errors.passwordInvalid ||
+              errors.passwordMax ||
+              errors.passwordMin
+            }
+            right={
+              <TextInput.Icon
+                icon={showPassword ? "eye" : "eye-off"}
+                onPress={() => setShowPassword(!showPassword)}
+              />
+            }
+          />
+          {errors.passwordEmpty && (
+            <HelperText type="error" visible>
+              Introduzca su contraseña
+            </HelperText>
+          )}
+          {errors.passwordMin && (
+            <HelperText type="error" visible>
+              La contraseña debe ser más larga
+            </HelperText>
+          )}
+          {errors.passwordMax && (
+            <HelperText type="error" visible>
+              La contraseña es demasiado larga
+            </HelperText>
+          )}
+          {errors.passwordInvalid && (
+            <HelperText type="error" visible>
+              La contraseña necesita un número y una letra mayúscula
+            </HelperText>
+          )}
+        </View>
 
-      {/* Repetir contraseña */}
-      <View style={{ width: "80%", marginBottom: 24 }}>
-        <TextInput
-          label="Repita la contraseña"
-          mode="outlined"
-          placeholder="Contraseña"
-          value={repeatPassword}
-          secureTextEntry={!showPassword}
-          onChangeText={setRepeatPassword}
-          autoCapitalize="none"
-          error={errors.passwordEmpty || errors.passwordFailed}
-          right={
-            <TextInput.Icon
-              icon={showPassword ? "eye" : "eye-off"}
-              onPress={() => setShowPassword(!showPassword)}
-            />
-          }
-        />
-        {errors.passwordFailed && (
-          <HelperText type="error" visible>
-            La contraseña no coincide
-          </HelperText>
-        )}
-      </View>
+        {/* Repetir contraseña */}
+        <View style={{ width: "80%", marginBottom: 24 }}>
+          <TextInput
+            label="Repita la contraseña"
+            mode="outlined"
+            placeholder="Contraseña"
+            value={repeatPassword}
+            secureTextEntry={!showPassword}
+            onChangeText={setRepeatPassword}
+            autoCapitalize="none"
+            error={errors.passwordEmpty || errors.passwordFailed}
+            right={
+              <TextInput.Icon
+                icon={showPassword ? "eye" : "eye-off"}
+                onPress={() => setShowPassword(!showPassword)}
+              />
+            }
+          />
+          {errors.passwordFailed && (
+            <HelperText type="error" visible>
+              La contraseña no coincide
+            </HelperText>
+          )}
+        </View>
 
-      {/* Botón Registrar */}
-      <Button
-        mode="contained"
-        style={{ width: "80%", marginBottom: 16 }}
-        onPress={handleRegister}
-        disabled={isProcessing}
-      >
-        {isProcessing ? <ActivityIndicator animating color="white" /> : "Registrar"}
-      </Button>
+        {/* Botón Registrar */}
+        <Button
+          mode="contained"
+          style={{ width: "80%", marginBottom: 16 }}
+          onPress={handleRegister}
+          disabled={isProcessing}
+        >
+          {isProcessing ? (
+            <ActivityIndicator animating color="white" />
+          ) : (
+            "Registrar"
+          )}
+        </Button>
 
         <Button mode="text" onPress={() => navigation.navigate("Login")}>
           ¿Tienes una cuenta? Inicia Sesión

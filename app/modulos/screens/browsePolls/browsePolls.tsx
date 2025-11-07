@@ -1,21 +1,18 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { pollsStart } from "./data";
 import { View, StyleSheet, ScrollView } from "react-native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../../../App";
 import {
   Button,
-  Card,
   FAB,
   Searchbar,
-  Surface,
   Text,
-  ToggleButton,
 } from "react-native-paper";
-import { chartColors } from "../pollResults/colors";
-import BrowsePollsView from "../../Components/browsePollsView/browsePollsView";
 import { useNavigation } from "@react-navigation/native";
 import GradientBackground from "../../Components/gradientBackground/gradientBackground";
+import BrowsePollsView from "../../Components/browsePollsView/browsePollsView";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 type NavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -36,7 +33,22 @@ const BrowsePollsScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const [polls, setPolls] = useState<Poll[]>(pollsStart);
   const [search, setSearch] = useState<string>("");
+  const [username, setUsername] = useState<string | null>(null);
   const scrollRef = useRef<ScrollView>(null);
+
+  useEffect(() => {
+    const getUsername = async () => {
+      const savedUsername = await AsyncStorage.getItem("username");
+      if (savedUsername) {
+        setUsername(savedUsername);
+        console.log("Usuario actual:", savedUsername);
+      } else {
+        console.warn("No se encontró el username en memoria");
+      }
+    };
+
+    getUsername();
+  }, []);
 
   const scrollToTop = () => {
     scrollRef.current?.scrollTo({ y: 0, animated: true });
@@ -45,7 +57,7 @@ const BrowsePollsScreen = () => {
   const changeSearch = (): void => {
     let newPolls = pollsStart;
 
-    if (search == "") {
+    if (search === "") {
       setPolls(newPolls);
       return;
     }
@@ -53,19 +65,18 @@ const BrowsePollsScreen = () => {
     const text = search.toLowerCase();
 
     newPolls = newPolls.filter((v) => {
-      if (
+      return (
         v.title.toLowerCase().includes(text) ||
         v.creator_name.toLowerCase().includes(text)
-      ) {
-        return v;
-      }
+      );
     });
+
     setPolls(newPolls);
   };
 
   return (
     <GradientBackground>
-      <View style={[styles.form]}>
+      <View style={styles.form}>
         <ScrollView
           contentContainerStyle={styles.container}
           style={{ flex: 1 }}
@@ -74,6 +85,13 @@ const BrowsePollsScreen = () => {
           <Text variant="displayMedium" style={styles.title}>
             Explorar Encuestas
           </Text>
+
+          {username && (
+            <Text variant="bodyLarge" style={{ marginBottom: 8 }}>
+              👋 Bienvenido, <Text style={{ fontWeight: "bold" }}>{username}</Text>
+            </Text>
+          )}
+
           <Searchbar
             placeholder="Busca encuesta por tema, creador..."
             onChangeText={setSearch}
@@ -81,8 +99,10 @@ const BrowsePollsScreen = () => {
             onIconPress={changeSearch}
             style={styles.text}
           />
-          <BrowsePollsView polls={polls} navigation={navigation}/>
+
+          <BrowsePollsView polls={polls} navigation={navigation} />
         </ScrollView>
+
         <FAB
           icon="plus"
           label="Crear nueva encuesta"
@@ -114,19 +134,9 @@ const styles = StyleSheet.create({
   },
   title: {
     marginTop: 16,
-    marginBottom: 16,
+    marginBottom: 8,
   },
   text: {
-    marginBottom: 16,
-  },
-  input: {
-    width: "100%",
-  },
-  inputHalf: {
-    width: "48%",
-  },
-  button: {
-    width: "100%",
     marginBottom: 16,
   },
 });
