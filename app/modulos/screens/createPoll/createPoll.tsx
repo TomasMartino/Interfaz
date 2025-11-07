@@ -99,7 +99,7 @@ const CreatePollScreen = () => {
     }
 
     try {
-      
+
       const { data: userData, error: userError } = await supabase.auth.getUser();
       if (userError || !userData?.user) {
         alert("⚠️ No hay sesión activa");
@@ -107,9 +107,9 @@ const CreatePollScreen = () => {
         return;
       }
 
-      
+
       const { data: pollData, error: pollError } = await supabase
-        .from("Poll")
+        .from("poll")
         .insert([
           {
             title,
@@ -125,7 +125,7 @@ const CreatePollScreen = () => {
 
       if (pollError) throw pollError;
 
-      
+
       const optionsToInsert = options.map((opt, index) => ({
         option_text: opt.optionText.trim(),
         option_order: index + 1,
@@ -133,7 +133,7 @@ const CreatePollScreen = () => {
       }));
 
       const { error: optionError } = await supabase
-        .from("Option")
+        .from("option")
         .insert(optionsToInsert);
 
       if (optionError) throw optionError;
@@ -312,7 +312,14 @@ const CreatePollScreen = () => {
             >
               Cancelar
             </Button>
-            <Button mode="contained" onPress={handleSubmit} style={styles.inputHalf}>
+            <Button
+              mode="contained"
+              onPress={() => {
+                handleSubmit(); // Primero ejecuta tu función
+                navigation.navigate("Home"); // Luego navega
+              }}
+              style={styles.inputHalf}
+            >
               Publicar
             </Button>
           </View>
