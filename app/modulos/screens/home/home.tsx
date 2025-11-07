@@ -41,17 +41,18 @@ const HomeScreen = () => {
 
         
         const { data: userData, error } = await supabase
-          .from("user_ids")
-          .select("id")
+          .from("profiles")
+          .select("id, email, username")
           .eq("email", email)
           .maybeSingle();
 
         if (error) console.error("Error buscando ID:", error.message);
+        console.log(userData);
 
         const fullUser: User = {
           id: userData?.id,
-          username,
-          email,
+          email : userData?.email,
+          username : userData?.username,
         };
 
         setUser(fullUser);
@@ -60,13 +61,14 @@ const HomeScreen = () => {
         if (userData?.id) {
           const { data: pollsData, error: pollsError } = await supabase
             .from("poll")
-            .select("*")
+            .select("id, title, start_time, end_time, status, profiles(username, id)")
             .eq("creator_id_new", userData.id);
 
           if (pollsError) {
             console.error("Error obteniendo encuestas:", pollsError.message);
           } else {
-            setPolls(pollsData || []);
+            console.log(pollsData)
+            setPolls(pollsData);
           }
         }
       } catch (err) {

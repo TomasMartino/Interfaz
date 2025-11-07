@@ -21,8 +21,11 @@ export type Poll = {
   start_time: Date;
   end_time: Date;
   status: "active" | "closed";
-  creator_name: string;
-  creator_id: number;
+  profiles: {
+    id: string;
+    username: string;
+    email: string;
+  };
 };
 
 const BrowsePollsScreen = () => {
@@ -55,11 +58,12 @@ const BrowsePollsScreen = () => {
       try {
         const { data: pollsData, error: pollsError } = await supabase
           .from("poll")
-          .select("*")
+          .select("id, title, start_time, end_time, status, profiles(username, id)")
 
         if (pollsError) {
           console.error("Error obteniendo encuestas:", pollsError.message);
         } else {
+          console.log(pollsData);
           setPolls(pollsData || []);
         }
       } catch (err) {
@@ -72,7 +76,7 @@ const BrowsePollsScreen = () => {
     try {
       const { data: pollsData, error: pollsError } = await supabase
         .from("poll")
-        .select("*")
+        .select("id, title, start_time, end_time, status, profiles(username, id)")
         .ilike("title", `%${text}%`)
 
       if (pollsError) {
@@ -83,15 +87,6 @@ const BrowsePollsScreen = () => {
     } catch (err) {
       console.log(err);
     }
-
-    /*newPolls = newPolls.filter((v) => {
-      return (
-        v.title.toLowerCase().includes(text) ||
-        v.creator_name.toLowerCase().includes(text)
-      );
-    });
-
-    setPolls(newPolls);*/
   };
 
   return (
