@@ -68,15 +68,6 @@ const PollInterfaceScreen = () => {
   const [votingVisible, setVotingVisible] = useState(false);
   const [error, setError] = useState(false);
 
-  const getUserID = async (): Promise<any> => {
-    try {
-      
-    } catch (err) {
-      console.log(err);
-    } finally {
-    }
-  };
-
   const fetchPollData = useCallback(async () => {
     try {
       const storedId = await AsyncStorage.getItem("selectedPollId");
