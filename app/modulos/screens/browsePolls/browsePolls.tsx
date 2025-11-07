@@ -3,16 +3,12 @@ import { pollsStart } from "./data";
 import { View, StyleSheet, ScrollView } from "react-native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../../../App";
-import {
-  Button,
-  FAB,
-  Searchbar,
-  Text,
-} from "react-native-paper";
+import { Button, FAB, Searchbar, Text } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
 import GradientBackground from "../../Components/gradientBackground/gradientBackground";
 import BrowsePollsView from "../../Components/browsePollsView/browsePollsView";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { supabase } from "../../../../backend/server/supabase";
 
 type NavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -31,7 +27,7 @@ export type Poll = {
 
 const BrowsePollsScreen = () => {
   const navigation = useNavigation<NavigationProp>();
-  const [polls, setPolls] = useState<Poll[]>(pollsStart);
+  const [polls, setPolls] = useState<Poll[]>([]);
   const [search, setSearch] = useState<string>("");
   const [username, setUsername] = useState<string | null>(null);
   const scrollRef = useRef<ScrollView>(null);
@@ -46,32 +42,56 @@ const BrowsePollsScreen = () => {
         console.warn("No se encontró el username en memoria");
       }
     };
-
     getUsername();
+    changeSearch();
   }, []);
 
   const scrollToTop = () => {
     scrollRef.current?.scrollTo({ y: 0, animated: true });
   };
 
-  const changeSearch = (): void => {
-    let newPolls = pollsStart;
-
+  const changeSearch = async () => {
     if (search === "") {
-      setPolls(newPolls);
-      return;
+      try {
+        const { data: pollsData, error: pollsError } = await supabase
+          .from("poll")
+          .select("*")
+
+        if (pollsError) {
+          console.error("Error obteniendo encuestas:", pollsError.message);
+        } else {
+          setPolls(pollsData || []);
+        }
+      } catch (err) {
+        console.log(err);
+      }
     }
 
     const text = search.toLowerCase();
 
-    newPolls = newPolls.filter((v) => {
+    try {
+      const { data: pollsData, error: pollsError } = await supabase
+        .from("poll")
+        .select("*")
+        .ilike("title", `%${text}%`)
+
+      if (pollsError) {
+        console.error("Error obteniendo encuestas:", pollsError.message);
+      } else {
+        setPolls(pollsData || []);
+      }
+    } catch (err) {
+      console.log(err);
+    }
+
+    /*newPolls = newPolls.filter((v) => {
       return (
         v.title.toLowerCase().includes(text) ||
         v.creator_name.toLowerCase().includes(text)
       );
     });
 
-    setPolls(newPolls);
+    setPolls(newPolls);*/
   };
 
   return (
@@ -88,12 +108,13 @@ const BrowsePollsScreen = () => {
 
           {username && (
             <Text variant="bodyLarge" style={{ marginBottom: 8 }}>
-              👋 Bienvenido, <Text style={{ fontWeight: "bold" }}>{username}</Text>
+              👋 Bienvenido,{" "}
+              <Text style={{ fontWeight: "bold" }}>{username}</Text>
             </Text>
           )}
 
           <Searchbar
-            placeholder="Busca encuesta por tema, creador..."
+            placeholder="Busca encuesta por tema..."
             onChangeText={setSearch}
             value={search}
             onIconPress={changeSearch}
