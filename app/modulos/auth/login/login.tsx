@@ -12,6 +12,7 @@ import { RootStackParamList } from "../../../../App";
 import { supabase } from "../../../../backend/server/supabase";
 import Logo from "../../Components/logo/logo";
 import GradientBackground from "../../Components/gradientBackground/gradientBackground";
+import AsyncStorage from "@react-native-async-storage/async-storage"; // 👈 IMPORTANTE
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, "Login">;
 
@@ -83,7 +84,9 @@ const LoginScreen = () => {
         return;
       }
 
-      // Si llega acá, todo bien
+      // ✅ Guardar email para usarlo en BrowsePollsView
+      await AsyncStorage.setItem("userEmail", emailToUse);
+
       Alert.alert("✅ Sesión iniciada correctamente");
       navigation.navigate("Home");
     } catch (err: any) {
@@ -112,65 +115,65 @@ const LoginScreen = () => {
 
         {/* Usuario o Email */}
         <View style={{ width: "80%", marginBottom: 12 }}>
-        <TextInput
-          label="Usuario o Email"
-          mode="outlined"
-          placeholder="Ingresa tu nombre de usuario o email"
-          value={usernameOrEmail}
-          onChangeText={setUsernameOrEmail}
-          autoCapitalize="none"
-          error={errors.usernameEmpty || errors.credentialsFailed}
-        />
-        {errors.usernameEmpty && (
-          <HelperText type="error" visible>
-            Introduzca su usuario o email
-          </HelperText>
-        )}
-      </View>
+          <TextInput
+            label="Usuario o Email"
+            mode="outlined"
+            placeholder="Ingresa tu nombre de usuario o email"
+            value={usernameOrEmail}
+            onChangeText={setUsernameOrEmail}
+            autoCapitalize="none"
+            error={errors.usernameEmpty || errors.credentialsFailed}
+          />
+          {errors.usernameEmpty && (
+            <HelperText type="error" visible>
+              Introduzca su usuario o email
+            </HelperText>
+          )}
+        </View>
 
-      {/* Contraseña */}
-      <View style={{ width: "80%", marginBottom: 12 }}>
-        <TextInput
-          label="Contraseña"
-          mode="outlined"
-          placeholder="Contraseña"
-          value={password}
-          secureTextEntry={!showPassword}
-          onChangeText={setPassword}
-          autoCapitalize="none"
-          error={errors.passwordEmpty || errors.credentialsFailed}
-          right={
-            <TextInput.Icon
-              icon={showPassword ? "eye" : "eye-off"}
-              onPress={() => setShowPassword(!showPassword)}
-            />
-          }
-        />
-        {errors.passwordEmpty && (
-          <HelperText type="error" visible>
-            Introduzca su contraseña
-          </HelperText>
-        )}
-        {errors.credentialsFailed && (
-          <HelperText type="error" visible>
-            Credenciales incorrectas o cuenta no verificada
-          </HelperText>
-        )}
-      </View>
+        {/* Contraseña */}
+        <View style={{ width: "80%", marginBottom: 12 }}>
+          <TextInput
+            label="Contraseña"
+            mode="outlined"
+            placeholder="Contraseña"
+            value={password}
+            secureTextEntry={!showPassword}
+            onChangeText={setPassword}
+            autoCapitalize="none"
+            error={errors.passwordEmpty || errors.credentialsFailed}
+            right={
+              <TextInput.Icon
+                icon={showPassword ? "eye" : "eye-off"}
+                onPress={() => setShowPassword(!showPassword)}
+              />
+            }
+          />
+          {errors.passwordEmpty && (
+            <HelperText type="error" visible>
+              Introduzca su contraseña
+            </HelperText>
+          )}
+          {errors.credentialsFailed && (
+            <HelperText type="error" visible>
+              Credenciales incorrectas o cuenta no verificada
+            </HelperText>
+          )}
+        </View>
 
-      {/* Botón Ingresar */}
-      <Button
-        mode="contained"
-        style={{ width: "80%", marginTop: 12, marginBottom: 16 }}
-        onPress={handleLogin}
-        disabled={isProcessing}
-      >
-        {isProcessing ? (
-          <ActivityIndicator animating color="white" />
-        ) : (
-          "Ingresar"
-        )}
-      </Button>
+        {/* Botón Ingresar */}
+        <Button
+          mode="contained"
+          style={{ width: "80%", marginTop: 12, marginBottom: 16 }}
+          onPress={handleLogin}
+          disabled={isProcessing}
+        >
+          {isProcessing ? (
+            <ActivityIndicator animating color="white" />
+          ) : (
+            "Ingresar"
+          )}
+        </Button>
 
         <Button mode="text" onPress={() => navigation.navigate("Register")}>
           ¿No tienes cuenta? Regístrate

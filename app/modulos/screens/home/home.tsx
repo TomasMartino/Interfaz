@@ -8,11 +8,12 @@ import { Poll } from "../browsePolls/browsePolls";
 import BrowsePollsView from "../../Components/browsePollsView/browsePollsView";
 import { supabase } from "../../../../backend/server/supabase";
 import GradientBackground from "../../Components/gradientBackground/gradientBackground";
-
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, "Home">;
 
 type User = {
+  id?: string;
   username: string;
   email: string;
 };
@@ -24,33 +25,58 @@ const HomeScreen = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const getUser = async () => {
-      const { data, error } = await supabase.auth.getUser();
+    const getUserFromMemory = async () => {
+      try {
+        setLoading(true);
 
-      if (error) {
-        console.error("Error obteniendo usuario:", error.message);
-        setLoading(false);
-        return;
-      }
+        // 🔹 Recuperar email y username de memoria
+        const email = await AsyncStorage.getItem("userEmail");
+        const username = await AsyncStorage.getItem("username");
 
-      if (data?.user) {
-        // Obtener username de la tabla Users
-        const { data: userData } = await supabase
+        if (!email || !username) {
+          console.warn("Faltan datos del usuario en memoria");
+          setLoading(false);
+          return;
+        }
+
+        
+        const { data: userData, error } = await supabase
           .from("Users")
-          .select("username, email")
-          .eq("id", data.user.id)
+          .select("id")
+          .eq("email", email)
           .maybeSingle();
 
-        setUser({
-          username: userData?.username || "Usuario",
-          email: userData?.email || data.user.email || "",
-        });
-      }
+        if (error) console.error("Error buscando ID:", error.message);
 
-      setLoading(false);
+        const fullUser: User = {
+          id: userData?.id,
+          username,
+          email,
+        };
+
+        setUser(fullUser);
+
+        // 🔹 Traer encuestas del usuario (si tiene ID)
+        if (userData?.id) {
+          const { data: pollsData, error: pollsError } = await supabase
+            .from("poll")
+            .select("*")
+            .eq("creator_id_new", userData.id);
+
+          if (pollsError) {
+            console.error("Error obteniendo encuestas:", pollsError.message);
+          } else {
+            setPolls(pollsData || []);
+          }
+        }
+      } catch (err) {
+        console.error("Error general:", err);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    getUser();
+    getUserFromMemory();
   }, []);
 
   if (loading) {
@@ -63,22 +89,6 @@ const HomeScreen = () => {
     );
   }
 
-  if (!user) {
-    return (
-      <GradientBackground>
-        <View style={styles.center}>
-          <Text>No hay sesión activa</Text>
-          <Button
-            mode="contained"
-            onPress={() => navigation.navigate("Login")}
-            style={{ marginTop: 16 }}
-          >
-            Ir al login
-          </Button>
-        </View>
-      </GradientBackground>
-    );
-  }
 
   return (
     <GradientBackground>
@@ -86,14 +96,16 @@ const HomeScreen = () => {
         <View style={styles.center}>
           <Avatar.Text
             size={120}
-            label={user.username[0]?.toUpperCase() || "U"}
+            label={user?.username[0]?.toUpperCase() || "U"}
             style={{ marginTop: 32, marginBottom: 16 }}
           />
           <View style={{ marginBottom: 16 }}>
             <Text variant="headlineMedium" style={{ textAlign: "center" }}>
-              {user.username}
+              {user?.username}
             </Text>
-            <Text variant="bodyLarge" style={{ textAlign: "center" }}>{user.email}</Text>
+            <Text variant="bodyLarge" style={{ textAlign: "center" }}>
+              {user?.email}
+            </Text>
           </View>
         </View>
 
@@ -129,6 +141,7 @@ const HomeScreen = () => {
           style={{ marginVertical: 24 }}
           onPress={async () => {
             await supabase.auth.signOut();
+            await AsyncStorage.multiRemove(["userEmail", "username"]);
             navigation.navigate("Login");
           }}
         >
