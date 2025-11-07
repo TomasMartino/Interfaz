@@ -4,6 +4,7 @@ import { View, StyleSheet } from "react-native";
 import { Card, Divider, Text } from "react-native-paper";
 import { NavigationProp } from "@react-navigation/native";
 import { RootStackParamList } from "../../../../App";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 type props = {
   poll: Poll;
@@ -12,11 +13,19 @@ type props = {
 };
 
 const browsePollsCard = ({ poll, statusColor, navigation }: props) => {
+  const handlePress = async () => {
+    try {
+      // Guardar el ID de la encuesta seleccionada
+      await AsyncStorage.setItem("selectedPollId", String(poll.id));
+      // Navegar a PollInterface
+      navigation.navigate("PollInterface");
+    } catch (err) {
+      console.error("Error guardando ID de encuesta:", err);
+    }
+  };
+
   return (
-    <Card
-      style={styles.text}
-      onPress={() => navigation.navigate("PollInterface")}
-    >
+    <Card style={styles.text} onPress={handlePress}>
       <Card.Title
         title={poll.title}
         titleNumberOfLines={3}

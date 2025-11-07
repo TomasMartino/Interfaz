@@ -41,7 +41,7 @@ const HomeScreen = () => {
 
         
         const { data: userData, error } = await supabase
-          .from("Users")
+          .from("user_ids")
           .select("id")
           .eq("email", email)
           .maybeSingle();

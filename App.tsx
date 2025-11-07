@@ -26,9 +26,10 @@ export type RootStackParamList = {
   Home: undefined;
   CreatePoll: undefined;
   BrowsePoll: undefined;
-  PollInterface: undefined;
+  PollInterface: undefined; 
   PollResults : undefined;
   RegistroPropietario: undefined;
+  
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
