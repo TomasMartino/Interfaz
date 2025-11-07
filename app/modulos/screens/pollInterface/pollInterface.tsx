@@ -43,7 +43,7 @@ type Option = {
 };
 
 type User = {
-  id : string;
+  id: string;
   username: string;
   email: string;
 };
@@ -55,7 +55,6 @@ type RemainingTime = {
 
 const PollInterfaceScreen = () => {
   const navigation = useNavigation<NavigationProp>();
-
   const [poll, setPoll] = useState<Poll | null>(null);
   const [options, setOptions] = useState<Option[]>([]);
   const [creator, setCreator] = useState<User | null>(null);
@@ -68,6 +67,15 @@ const PollInterfaceScreen = () => {
   const [hasVoted, setHasVoted] = useState(false);
   const [votingVisible, setVotingVisible] = useState(false);
   const [error, setError] = useState(false);
+
+  const getUserID = async (): Promise<any> => {
+    try {
+      
+    } catch (err) {
+      console.log(err);
+    } finally {
+    }
+  };
 
   const fetchPollData = useCallback(async () => {
     try {
@@ -122,6 +130,47 @@ const PollInterfaceScreen = () => {
     setRemainingTime({ hours, minutes });
   }, [poll]);
 
+  const checkVote = async () => {
+    const storedId = await AsyncStorage.getItem("selectedPollId");
+    if (!storedId) return console.warn("No se encontró ID de la encuesta");
+    const pollId = parseInt(storedId, 10);
+
+    try {
+      // 🔹 Traer user_id desde user_ids usando el email
+      const email = await AsyncStorage.getItem("userEmail");
+      if (!email) throw new Error("No se encontró email del usuario");
+
+      const { data: userData, error: userError } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("email", email)
+        .maybeSingle();
+
+      if (userError || !userData) throw new Error("No se pudo obtener user_id");
+      const userId = userData.id;
+      
+      const { data: voteData, error: voteError } = await supabase
+        .from("vote")
+        .select("*")
+        .eq("user_id", userId)
+        .eq("poll_id", pollId)
+  
+      if (voteData && voteData.length > 0 ) {
+        setHasVoted(true);
+      } 
+      if (voteError) {
+        console.log(voteError);
+      }
+    } catch (err ) {
+      console.log(err);
+    }
+
+  };
+
+  useEffect(() => {
+    checkVote();
+  }, []);
+
   useEffect(() => {
     fetchPollData();
   }, [fetchPollData]);
@@ -153,7 +202,6 @@ const PollInterfaceScreen = () => {
 
       if (userError || !userData) throw new Error("No se pudo obtener user_id");
       const userId = userData.id;
-
       // 🔹 Encontrar opción seleccionada
       const selectedOption = options.find(
         (opt) => String(opt.option_order) === checked
@@ -168,7 +216,7 @@ const PollInterfaceScreen = () => {
           user_id: userId,
         },
       ]);
-
+      setHasVoted(true);
       console.log("Voto registrado correctamente");
     } catch (err) {
       console.error("Error guardando voto:", err);
@@ -184,8 +232,8 @@ const PollInterfaceScreen = () => {
           {poll.title}
         </Text>
 
-        <Surface elevation={0} style={[styles.surface, styles.textSurface]}>
-          <Avatar.Text size={24} label={poll?.profile.username[0] || "U"} />
+        <Surface elevation={0} style={[styles.surface, styles.surfaceAvatar, styles.textSurface]}>
+          <Avatar.Text size={42} label={poll?.profile.username[0] || "U"} />
           <Text variant="titleMedium" style={styles.creator}>
             Creado por {poll?.profile.username || "Desconocido"}
           </Text>
@@ -195,7 +243,7 @@ const PollInterfaceScreen = () => {
           {poll.description}
         </Text>
 
-        <Surface style={[styles.surface, styles.textSurface]}>
+        <Surface style={[styles.surface, styles.surfaceTime, styles.textSurface]}>
           <Text>
             <Icon
               source="calendar-start-outline"
@@ -288,14 +336,19 @@ const styles = StyleSheet.create({
   title: { marginTop: 16, marginBottom: 16 },
   text: { marginBottom: 16 },
   button: { width: "100%", marginBottom: 16 },
+  surfaceAvatar: {
+    justifyContent: "flex-start"
+  },
+  surfaceTime: {
+    justifyContent: "space-between"
+  },
   surface: {
-    justifyContent: "space-between",
     marginBottom: 16,
     borderRadius: 20,
-    paddingHorizontal: 22,
+    paddingHorizontal: 24,
     paddingVertical: 12,
   },
-  creator: { marginLeft: 8 },
+  creator: { marginLeft: 16 },
   textSurface: { flexDirection: "row", alignItems: "center" },
   inputHalf: { width: "48%" },
   modalButtons: { flexDirection: "row", justifyContent: "space-between" },
