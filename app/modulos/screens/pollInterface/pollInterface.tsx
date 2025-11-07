@@ -14,6 +14,7 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import AppModal from "../../Components/modal/modal";
 import { RootStackParamList } from "../../../../App";
+import GradientBackground from "../../Components/gradientBackground/gradientBackground";
 
 type NavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -123,115 +124,117 @@ const PollInterfaceScreen = () => {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.form}>
-      
-        <Text variant="displayMedium" style={styles.title}>
-          {poll.title}
-        </Text>
+    <GradientBackground>
+      <ScrollView contentContainerStyle={styles.container}>
+        <View style={styles.form}>
 
-    
-        <Surface elevation={0} style={[styles.surface, styles.textSurface]}>
-          <Avatar.Text size={24} label={user.name[0]} />
-          <Text variant="titleMedium" style={styles.creator}>
-            Creado por {user.name}
+          <Text variant="displayMedium" style={styles.title}>
+            {poll.title}
           </Text>
-        </Surface>
 
-     
-        <Text variant="titleMedium" style={styles.text}>
-          {poll.description}
-        </Text>
 
-       
-        <Surface style={[styles.surface, styles.textSurface]}>
-          <Text>
-            <Icon
-              source="calendar-start-outline"
-              color={MD3DarkTheme.colors.primary}
-              size={16}
-            />{" "}
-            Iniciado: {poll.startDate.toLocaleDateString("es")}
+          <Surface elevation={0} style={[styles.surface, styles.textSurface]}>
+            <Avatar.Text size={24} label={user.name[0]} />
+            <Text variant="titleMedium" style={styles.creator}>
+              Creado por {user.name}
+            </Text>
+          </Surface>
+
+
+          <Text variant="titleMedium" style={styles.text}>
+            {poll.description}
           </Text>
-          {remainingTime && (
+
+
+          <Surface style={[styles.surface, styles.textSurface]}>
             <Text>
               <Icon
-                source="timer-outline"
+                source="calendar-start-outline"
                 color={MD3DarkTheme.colors.primary}
                 size={16}
               />{" "}
-              {remainingTime.hours}h {remainingTime.minutes}m restantes
+              Iniciado: {poll.startDate.toLocaleDateString("es")}
             </Text>
-          )}
-        </Surface>
+            {remainingTime && (
+              <Text>
+                <Icon
+                  source="timer-outline"
+                  color={MD3DarkTheme.colors.primary}
+                  size={16}
+                />{" "}
+                {remainingTime.hours}h {remainingTime.minutes}m restantes
+              </Text>
+            )}
+          </Surface>
 
-        
-        <RadioButton.Group onValueChange={setChecked} value={checked}>
-          {options.map((opt, i) => (
-            <Surface
-              key={opt.id}
-              style={[
-                styles.surface,
-                i + 1 !== options.length ? null : { marginBottom: 0 },
-              ]}
-            >
-              <RadioButton.Item
-                label={opt.optionText}
-                value={String(opt.optionOrder)}
-                disabled={hasVoted}
-              />
-            </Surface>
-          ))}
-        </RadioButton.Group>
 
-        
-        <HelperText type="error" visible={error}>
-          Debes elegir una opción para poder votar.
-        </HelperText>
+          <RadioButton.Group onValueChange={setChecked} value={checked}>
+            {options.map((opt, i) => (
+              <Surface
+                key={opt.id}
+                style={[
+                  styles.surface,
+                  i + 1 !== options.length ? null : { marginBottom: 0 },
+                ]}
+              >
+                <RadioButton.Item
+                  label={opt.optionText}
+                  value={String(opt.optionOrder)}
+                  disabled={hasVoted}
+                />
+              </Surface>
+            ))}
+          </RadioButton.Group>
 
-       
-        <Button
-          mode="contained"
-          disabled={hasVoted}
-          onPress={() => setVotingVisible(true)}
-          style={styles.button}
-        >
-          Enviar voto
-        </Button>
 
-        <Button
-          mode="elevated"
-          style={styles.button}
-          onPress={() => navigation.navigate("PollResults")}
-        >
-          Mirar resultados
-        </Button>
-      </View>
+          <HelperText type="error" visible={error}>
+            Debes elegir una opción para poder votar.
+          </HelperText>
 
-      <AppModal
-        visible={votingVisible}
-        dismissable={false}
-        onDismiss={() => setVotingVisible(false)}
-      >
-        <Text variant="headlineMedium" style={styles.title}>
-          Confirmar voto
-        </Text>
-        <Text style={styles.text}>No podrás revertir tu voto.</Text>
 
-        <View style={styles.modalButtons}>
+          <Button
+            mode="contained"
+            disabled={hasVoted}
+            onPress={() => setVotingVisible(true)}
+            style={styles.button}
+          >
+            Enviar voto
+          </Button>
+
           <Button
             mode="elevated"
-            onPress={() => setVotingVisible(false)}
-            style={styles.inputHalf}
+            style={styles.button}
+            onPress={() => navigation.navigate("PollResults")}
           >
-            Cancelar
-          </Button>
-          <Button mode="contained" onPress={handleVoting} style={styles.inputHalf}>
-            Confirmar
+            Mirar resultados
           </Button>
         </View>
-      </AppModal>
-    </ScrollView>
+
+        <AppModal
+          visible={votingVisible}
+          dismissable={false}
+          onDismiss={() => setVotingVisible(false)}
+        >
+          <Text variant="headlineMedium" style={styles.title}>
+            Confirmar voto
+          </Text>
+          <Text style={styles.text}>No podrás revertir tu voto.</Text>
+
+          <View style={styles.modalButtons}>
+            <Button
+              mode="elevated"
+              onPress={() => setVotingVisible(false)}
+              style={styles.inputHalf}
+            >
+              Cancelar
+            </Button>
+            <Button mode="contained" onPress={handleVoting} style={styles.inputHalf}>
+              Confirmar
+            </Button>
+          </View>
+        </AppModal>
+      </ScrollView>
+    </GradientBackground>
   );
 };
 

@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { View, Alert } from "react-native";
 import {
-  Text,
   TextInput,
   Button,
   ActivityIndicator,
@@ -11,6 +10,8 @@ import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../../../App";
 import { supabase } from "../../../../backend/server/supabase";
+import Logo from "../../Components/logo/logo";
+import GradientBackground from "../../Components/gradientBackground/gradientBackground";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, "Login">;
 
@@ -50,21 +51,12 @@ const LoginScreen = () => {
       if (!/\S+@\S+\.\S+/.test(usernameOrEmail)) {
         const { data: userData, error: userError } = await supabase
           .from("Users")
-          .select("email, active")
+          .select("email")
           .eq("username", usernameOrEmail)
           .maybeSingle();
 
         if (userError || !userData) {
           setErrors({ ...initialErrors, credentialsFailed: true });
-          setIsProcessing(false);
-          return;
-        }
-
-        if (!userData.active) {
-          Alert.alert(
-            "Cuenta inactiva",
-            "Tu cuenta no está activa. Verifica tu correo antes de iniciar sesión."
-          );
           setIsProcessing(false);
           return;
         }
@@ -112,52 +104,64 @@ const LoginScreen = () => {
   };
 
   return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <Text variant="displayMedium" style={{ marginBottom: 16 }}>
-        Iniciar Sesión
-      </Text>
+    <GradientBackground>
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 16 }}>
+        <View style={{ marginBottom: 32 }}>
+          <Logo />
+        </View>
 
-      <TextInput
-        label="Usuario o Email"
-        mode="outlined"
-        placeholder="Ingresa tu nombre de usuario o email"
-        value={usernameOrEmail}
-        onChangeText={setUsernameOrEmail}
-        autoCapitalize="none"
-        error={errors.usernameEmpty || errors.credentialsFailed}
-        style={{ width: "80%" }}
-      />
-      <HelperText type="error" visible={errors.usernameEmpty}>
-        Introduzca su usuario o email
-      </HelperText>
+        {/* Usuario o Email */}
+        <View style={{ width: "80%", marginBottom: 12 }}>
+        <TextInput
+          label="Usuario o Email"
+          mode="outlined"
+          placeholder="Ingresa tu nombre de usuario o email"
+          value={usernameOrEmail}
+          onChangeText={setUsernameOrEmail}
+          autoCapitalize="none"
+          error={errors.usernameEmpty || errors.credentialsFailed}
+        />
+        {errors.usernameEmpty && (
+          <HelperText type="error" visible>
+            Introduzca su usuario o email
+          </HelperText>
+        )}
+      </View>
 
-      <TextInput
-        label="Contraseña"
-        mode="outlined"
-        placeholder="Contraseña"
-        value={password}
-        secureTextEntry={!showPassword}
-        onChangeText={setPassword}
-        autoCapitalize="none"
-        error={errors.passwordEmpty || errors.credentialsFailed}
-        right={
-          <TextInput.Icon
-            icon={showPassword ? "eye" : "eye-off"}
-            onPress={() => setShowPassword(!showPassword)}
-          />
-        }
-        style={{ width: "80%" }}
-      />
-      <HelperText type="error" visible={errors.passwordEmpty}>
-        Introduzca su contraseña
-      </HelperText>
-      <HelperText type="error" visible={errors.credentialsFailed}>
-        Credenciales incorrectas o cuenta no verificada
-      </HelperText>
+      {/* Contraseña */}
+      <View style={{ width: "80%", marginBottom: 12 }}>
+        <TextInput
+          label="Contraseña"
+          mode="outlined"
+          placeholder="Contraseña"
+          value={password}
+          secureTextEntry={!showPassword}
+          onChangeText={setPassword}
+          autoCapitalize="none"
+          error={errors.passwordEmpty || errors.credentialsFailed}
+          right={
+            <TextInput.Icon
+              icon={showPassword ? "eye" : "eye-off"}
+              onPress={() => setShowPassword(!showPassword)}
+            />
+          }
+        />
+        {errors.passwordEmpty && (
+          <HelperText type="error" visible>
+            Introduzca su contraseña
+          </HelperText>
+        )}
+        {errors.credentialsFailed && (
+          <HelperText type="error" visible>
+            Credenciales incorrectas o cuenta no verificada
+          </HelperText>
+        )}
+      </View>
 
+      {/* Botón Ingresar */}
       <Button
         mode="contained"
-        style={{ width: "80%", marginBottom: 16 }}
+        style={{ width: "80%", marginTop: 12, marginBottom: 16 }}
         onPress={handleLogin}
         disabled={isProcessing}
       >
@@ -168,10 +172,11 @@ const LoginScreen = () => {
         )}
       </Button>
 
-      <Button mode="text" onPress={() => navigation.navigate("Register")}>
-        ¿No tienes cuenta? Regístrate
-      </Button>
-    </View>
+        <Button mode="text" onPress={() => navigation.navigate("Register")}>
+          ¿No tienes cuenta? Regístrate
+        </Button>
+      </View>
+    </GradientBackground>
   );
 };
 

@@ -7,16 +7,14 @@ import { RootStackParamList } from "../../../../App";
 import { Poll } from "../browsePolls/browsePolls";
 import BrowsePollsView from "../../Components/browsePollsView/browsePollsView";
 import { supabase } from "../../../../backend/server/supabase";
+import GradientBackground from "../../Components/gradientBackground/gradientBackground";
 
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, "Home">;
 
 type User = {
-  name: string;
-  lastName: string;
+  username: string;
   email: string;
-  registration_date: Date;
-  active: boolean;
 };
 
 const HomeScreen = () => {
@@ -36,13 +34,16 @@ const HomeScreen = () => {
       }
 
       if (data?.user) {
-        const { user_metadata, email } = data.user;
+        // Obtener username de la tabla Users
+        const { data: userData } = await supabase
+          .from("Users")
+          .select("username, email")
+          .eq("id", data.user.id)
+          .maybeSingle();
+
         setUser({
-          name: user_metadata?.name || "Usuario",
-          lastName: user_metadata?.lastName || "",
-          email: email || "",
-          registration_date: new Date(user_metadata?.registration_date || Date.now()),
-          active: true,
+          username: userData?.username || "Usuario",
+          email: userData?.email || data.user.email || "",
         });
       }
 
@@ -54,81 +55,87 @@ const HomeScreen = () => {
 
   if (loading) {
     return (
-      <View style={styles.center}>
-        <Text>Cargando usuario...</Text>
-      </View>
+      <GradientBackground>
+        <View style={styles.center}>
+          <Text>Cargando usuario...</Text>
+        </View>
+      </GradientBackground>
     );
   }
 
   if (!user) {
     return (
-      <View style={styles.center}>
-        <Text>No hay sesión activa</Text>
-        <Button
-          mode="contained"
-          onPress={() => navigation.navigate("Login")}
-          style={{ marginTop: 16 }}
-        >
-          Ir al login
-        </Button>
-      </View>
+      <GradientBackground>
+        <View style={styles.center}>
+          <Text>No hay sesión activa</Text>
+          <Button
+            mode="contained"
+            onPress={() => navigation.navigate("Login")}
+            style={{ marginTop: 16 }}
+          >
+            Ir al login
+          </Button>
+        </View>
+      </GradientBackground>
     );
   }
 
   return (
-    <View style={styles.view}>
-      <View style={styles.center}>
-        <Avatar.Text
-          size={120}
-          label={user.name.slice(0, 1)}
-          style={{ marginTop: 32, marginBottom: 16 }}
-        />
-        <View style={{ marginBottom: 16 }}>
-          <Text variant="displayMedium" style={{ textAlign: "center" }}>
-            {`${user.name} ${user.lastName}`}
-          </Text>
-          <Text variant="headlineSmall">{user.email}</Text>
+    <GradientBackground>
+      <View style={styles.view}>
+        <View style={styles.center}>
+          <Avatar.Text
+            size={120}
+            label={user.username[0]?.toUpperCase() || "U"}
+            style={{ marginTop: 32, marginBottom: 16 }}
+          />
+          <View style={{ marginBottom: 16 }}>
+            <Text variant="headlineMedium" style={{ textAlign: "center" }}>
+              {user.username}
+            </Text>
+            <Text variant="bodyLarge" style={{ textAlign: "center" }}>{user.email}</Text>
+          </View>
         </View>
+
+        <Button
+          mode="contained"
+          icon="plus-circle-outline"
+          style={{ marginBottom: 16 }}
+          onPress={() => navigation.navigate("CreatePoll")}
+        >
+          Crear votación
+        </Button>
+
+        <Button
+          mode="elevated"
+          icon="chart-box-outline"
+          style={{ marginBottom: 16 }}
+          onPress={() => navigation.navigate("BrowsePoll")}
+        >
+          Explorar encuestas
+        </Button>
+
+        <Text variant="headlineSmall" style={[styles.margin, { textAlign: "center" }]}>
+          Mis Encuestas
+        </Text>
+
+        <ScrollView style={styles.container}>
+          <BrowsePollsView polls={polls} navigation={navigation} />
+        </ScrollView>
+
+        <Button
+          mode="outlined"
+          icon="logout"
+          style={{ marginVertical: 24 }}
+          onPress={async () => {
+            await supabase.auth.signOut();
+            navigation.navigate("Login");
+          }}
+        >
+          Cerrar sesión
+        </Button>
       </View>
-
-      <Button
-        mode="contained"
-        icon="plus-circle-outline"
-        style={{ marginBottom: 16 }}
-        onPress={() => navigation.navigate("CreatePoll")}
-      >
-        Crear votación
-      </Button>
-
-      <Button
-        mode="elevated"
-        icon="chart-box-outline"
-        style={{ marginBottom: 16 }}
-        onPress={() => navigation.navigate("BrowsePoll")}
-      >
-        Explorar encuestas
-      </Button>
-
-      <Text variant="headlineSmall" style={[styles.margin, { textAlign: "center" }]}>
-        Mis Encuestas
-      </Text>
-
-      <ScrollView style={styles.container}>
-        <BrowsePollsView polls={polls} navigation={navigation} />
-      </ScrollView>
-
-      <Button
-        mode="outlined"
-        icon="logout"
-        style={{ marginVertical: 24 }}
-        onPress={async () => {
-          await supabase.auth.signOut();
-          navigation.navigate("Login");
-        }}
-      >
-        Cerrar sesión
-      </Button>
-    </View>
+    </GradientBackground>
   );
 };
 

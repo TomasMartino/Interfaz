@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { Appbar, Divider, Drawer, IconButton, Menu } from "react-native-paper";
-import { Text } from "react-native-paper";
+import { Appbar, Divider, IconButton, Menu } from "react-native-paper";
 import { getHeaderTitle } from "@react-navigation/elements";
 import { NativeStackHeaderProps } from "@react-navigation/native-stack";
+import Logo from "../logo/logo";
 
 const Header = ({
   navigation,
@@ -30,7 +30,7 @@ const Header = ({
         <Appbar.BackAction onPress={navigation.goBack} />
       ) : null}
 
-      <Appbar.Content title={<Text variant="displayMedium">VoxPopuli</Text>} />
+      <Appbar.Content title={<Logo inline />} />
       <Menu
         visible={visible}
         onDismiss={closeMenu}

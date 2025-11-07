@@ -15,6 +15,7 @@ import OptionsForm from "./components/optionsForm";
 import NotificationSwitch from "./components/notificationSwitch";
 import AppModal from "../../Components/modal/modal";
 import { supabase } from "../../../../backend/server/supabase";
+import GradientBackground from "../../Components/gradientBackground/gradientBackground";
 
 type NavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -148,164 +149,176 @@ const CreatePollScreen = () => {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container} style={{ flex: 1 }}>
-      <View style={styles.form}>
-        <Text variant="displayMedium" style={styles.title}>
-          Crear Encuesta
-        </Text>
+    <GradientBackground>
+      <ScrollView contentContainerStyle={styles.container} style={{ flex: 1 }}>
+        <View style={styles.form}>
+          <Text variant="headlineMedium" style={styles.title}>
+            Crear Encuesta
+          </Text>
 
-        <TextInput
-          label="Título"
-          value={title}
-          onChangeText={setTitle}
-          error={errors.titleEmpty}
-          style={styles.input}
-          mode="outlined"
-        />
-        <HelperText type="error" visible={errors.titleEmpty}>
-          Introduzca el título de la encuesta
-        </HelperText>
+          <View style={{ marginBottom: 12 }}>
+            <TextInput
+              label="Título"
+              value={title}
+              onChangeText={setTitle}
+              error={errors.titleEmpty}
+              style={styles.input}
+              mode="outlined"
+            />
+            {errors.titleEmpty && (
+              <HelperText type="error" visible>
+                Introduzca el título de la encuesta
+              </HelperText>
+            )}
+          </View>
 
-        <TextInput
-          label="Descripción"
-          value={description}
-          onChangeText={setDescription}
-          error={errors.descriptionEmpty}
-          multiline
-          style={styles.input}
-          mode="outlined"
-        />
-        <HelperText type="error" visible={errors.descriptionEmpty}>
-          Introduzca la descripción de la encuesta
-        </HelperText>
+          <View style={{ marginBottom: 12 }}>
+            <TextInput
+              label="Descripción"
+              value={description}
+              onChangeText={setDescription}
+              error={errors.descriptionEmpty}
+              multiline
+              style={styles.input}
+              mode="outlined"
+            />
+            {errors.descriptionEmpty && (
+              <HelperText type="error" visible>
+                Introduzca la descripción de la encuesta
+              </HelperText>
+            )}
+          </View>
 
-        <OptionsForm
-          options={options}
-          setOptions={setOptions}
-          error={errors.optionsEmpty}
-        />
-
-        <Text variant="headlineSmall" style={styles.text}>
-          Programar encuesta
-        </Text>
-
-        <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-          <DateTimePicker
-            label="Fecha Inicio"
-            value={startTime}
-            setValue={setStartTime}
-            error={errors.startEmpty || errors.sameDate}
-            disablePastDates
-            stylesInput={styles.inputHalf}
+          <OptionsForm
+            options={options}
+            setOptions={setOptions}
+            error={errors.optionsEmpty}
           />
-          <DateTimePicker
-            label="Fecha Fin"
-            value={endTime}
-            error={errors.endEmpty || errors.sameDate || errors.endBeforeStart}
-            setValue={setEndTime}
-            disablePastDates
-            stylesInput={styles.inputHalf}
-          />
-        </View>
 
-        {errors.startEmpty && (
-          <HelperText type="error" visible>
-            Introduzca la fecha inicio de la encuesta
-          </HelperText>
-        )}
-        {errors.endEmpty && (
-          <HelperText type="error" visible>
-            Introduzca la fecha fin de la encuesta
-          </HelperText>
-        )}
-        {errors.sameDate && (
-          <HelperText type="error" visible>
-            La fecha inicio y la fecha fin no pueden ser la misma
-          </HelperText>
-        )}
-        {errors.endBeforeStart && (
-          <HelperText type="error" visible>
-            La fecha fin no puede ser antes que la fecha inicio
-          </HelperText>
-        )}
+          <Text variant="headlineSmall" style={styles.text}>
+            Programar encuesta
+          </Text>
 
-        <NotificationSwitch value={notify} setValue={setNotify} />
+          <View style={{ marginBottom: 12 }}>
+            <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+              <DateTimePicker
+                label="Fecha Inicio"
+                value={startTime}
+                setValue={setStartTime}
+                error={errors.startEmpty || errors.sameDate}
+                disablePastDates
+                stylesInput={styles.inputHalf}
+              />
+              <DateTimePicker
+                label="Fecha Fin"
+                value={endTime}
+                error={errors.endEmpty || errors.sameDate || errors.endBeforeStart}
+                setValue={setEndTime}
+                disablePastDates
+                stylesInput={styles.inputHalf}
+              />
+            </View>
 
-        <Divider style={styles.button} />
+            {errors.startEmpty && (
+              <HelperText type="error" visible>
+                Introduzca la fecha inicio de la encuesta
+              </HelperText>
+            )}
+            {errors.endEmpty && (
+              <HelperText type="error" visible>
+                Introduzca la fecha fin de la encuesta
+              </HelperText>
+            )}
+            {errors.sameDate && (
+              <HelperText type="error" visible>
+                La fecha inicio y la fecha fin no pueden ser la misma
+              </HelperText>
+            )}
+            {errors.endBeforeStart && (
+              <HelperText type="error" visible>
+                La fecha fin no puede ser antes que la fecha inicio
+              </HelperText>
+            )}
+          </View>
 
-        <Button
-          mode="contained"
-          style={styles.button}
-          loading={loading}
-          disabled={loading}
-          onPress={() => setSubmitVisible(true)}
-        >
-          Crear y publicar encuesta
-        </Button>
+          <NotificationSwitch value={notify} setValue={setNotify} />
 
-        <Button
-          mode="outlined"
-          style={styles.button}
-          disabled={loading}
-          onPress={() => setResetVisible(true)}
-        >
-          Restablecer formulario
-        </Button>
-      </View>
+          <Divider style={styles.button} />
 
-      {/* Modal reset */}
-      <AppModal
-        visible={resetVisible}
-        dismissable={false}
-        onDismiss={() => setResetVisible(false)}
-      >
-        <Text variant="headlineMedium" style={styles.title}>
-          Restablecer formulario
-        </Text>
-        <Text style={styles.text}>
-          ¿Estás seguro que quieres resetear el formulario? {"\n"}
-          Toda la información se perderá.
-        </Text>
-        <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
           <Button
-            mode="elevated"
-            onPress={() => setResetVisible(false)}
-            style={styles.inputHalf}
+            mode="contained"
+            style={styles.button}
+            loading={loading}
+            disabled={loading}
+            onPress={() => setSubmitVisible(true)}
           >
-            Cancelar
+            Crear y publicar encuesta
           </Button>
-          <Button mode="contained" onPress={resetForm} style={styles.inputHalf}>
-            Restablecer
-          </Button>
-        </View>
-      </AppModal>
 
-      {/* Modal publicar */}
-      <AppModal
-        visible={submitVisible}
-        dismissable={false}
-        onDismiss={() => setSubmitVisible(false)}
-      >
-        <Text variant="headlineMedium" style={styles.title}>
-          Publicar encuesta
-        </Text>
-        <Text style={styles.text}>
-          ¿Estás seguro que quieres publicar la encuesta?
-        </Text>
-        <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
           <Button
-            mode="elevated"
-            onPress={() => setSubmitVisible(false)}
-            style={styles.inputHalf}
+            mode="outlined"
+            style={styles.button}
+            disabled={loading}
+            onPress={() => setResetVisible(true)}
           >
-            Cancelar
-          </Button>
-          <Button mode="contained" onPress={handleSubmit} style={styles.inputHalf}>
-            Publicar
+            Restablecer formulario
           </Button>
         </View>
-      </AppModal>
-    </ScrollView>
+
+        {/* Modal reset */}
+        <AppModal
+          visible={resetVisible}
+          dismissable={false}
+          onDismiss={() => setResetVisible(false)}
+        >
+          <Text variant="headlineMedium" style={styles.title}>
+            Restablecer formulario
+          </Text>
+          <Text style={styles.text}>
+            ¿Estás seguro que quieres resetear el formulario? {"\n"}
+            Toda la información se perderá.
+          </Text>
+          <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+            <Button
+              mode="elevated"
+              onPress={() => setResetVisible(false)}
+              style={styles.inputHalf}
+            >
+              Cancelar
+            </Button>
+            <Button mode="contained" onPress={resetForm} style={styles.inputHalf}>
+              Restablecer
+            </Button>
+          </View>
+        </AppModal>
+
+        {/* Modal publicar */}
+        <AppModal
+          visible={submitVisible}
+          dismissable={false}
+          onDismiss={() => setSubmitVisible(false)}
+        >
+          <Text variant="headlineMedium" style={styles.title}>
+            Publicar encuesta
+          </Text>
+          <Text style={styles.text}>
+            ¿Estás seguro que quieres publicar la encuesta?
+          </Text>
+          <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+            <Button
+              mode="elevated"
+              onPress={() => setSubmitVisible(false)}
+              style={styles.inputHalf}
+            >
+              Cancelar
+            </Button>
+            <Button mode="contained" onPress={handleSubmit} style={styles.inputHalf}>
+              Publicar
+            </Button>
+          </View>
+        </AppModal>
+      </ScrollView>
+    </GradientBackground>
   );
 };
 

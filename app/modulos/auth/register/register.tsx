@@ -11,6 +11,7 @@ import { useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "../../../../App";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { supabase } from "../../../../backend/server/supabase";
+import GradientBackground from "../../Components/gradientBackground/gradientBackground";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, "Register">;
 
@@ -75,15 +76,15 @@ const RegisterScreen = () => {
 
       const user = data.user;
 
-      // Guardar datos del usuario en la tabla "users"
+      // Guardar datos del usuario en la tabla "Users"
       if (user) {
-        const { error: insertError } = await supabase.from("users").insert([
+        const { error: insertError } = await supabase.from("Users").insert([
           {
             id: user.id,
             username: username,
             email,
             registration_date: new Date(),
-            
+
           },
         ]);
 
@@ -132,106 +133,133 @@ const RegisterScreen = () => {
   };
 
   return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <Text variant="displayMedium" style={{ marginBottom: 16 }}>
-        Crear una cuenta
-      </Text>
+    <GradientBackground>
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 16 }}>
+        <Text variant="headlineMedium" style={{ marginBottom: 24 }}>
+          Crear una cuenta
+        </Text>
 
       {/* Nombre de Usuario */}
-      <TextInput
-        label="Nombre de Usuario"
-        mode="outlined"
-        placeholder="Nombre"
-        value={username}
-        onChangeText={setUsername}
-        autoCapitalize="none"
-        error={errors.usernameEmpty || errors.usernameInvalid || errors.usernameMax || errors.usernameMin}
-        style={{ width: "80%" }}
-      />
-      <HelperText type="error" visible={errors.usernameEmpty}>
-        Introduzca su nombre de usuario
-      </HelperText>
-      <HelperText type="error" visible={errors.usernameInvalid}>
-        El nombre de usuario no puede tener caracteres especiales
-      </HelperText>
-      <HelperText type="error" visible={errors.usernameMax}>
-        El nombre de usuario es demasiado largo
-      </HelperText>
-      <HelperText type="error" visible={errors.usernameMin}>
-        El nombre de usuario debe ser más largo
-      </HelperText>
+      <View style={{ width: "80%", marginBottom: 12 }}>
+        <TextInput
+          label="Nombre de Usuario"
+          mode="outlined"
+          placeholder="Nombre"
+          value={username}
+          onChangeText={setUsername}
+          autoCapitalize="none"
+          error={errors.usernameEmpty || errors.usernameInvalid || errors.usernameMax || errors.usernameMin}
+        />
+        {errors.usernameEmpty && (
+          <HelperText type="error" visible>
+            Introduzca su nombre de usuario
+          </HelperText>
+        )}
+        {errors.usernameInvalid && (
+          <HelperText type="error" visible>
+            El nombre de usuario no puede tener caracteres especiales
+          </HelperText>
+        )}
+        {errors.usernameMax && (
+          <HelperText type="error" visible>
+            El nombre de usuario es demasiado largo
+          </HelperText>
+        )}
+        {errors.usernameMin && (
+          <HelperText type="error" visible>
+            El nombre de usuario debe ser más largo
+          </HelperText>
+        )}
+      </View>
 
       {/* Email */}
-      <TextInput
-        label="Email"
-        mode="outlined"
-        placeholder="Email"
-        keyboardType="email-address"
-        value={email}
-        onChangeText={setEmail}
-        autoCapitalize="none"
-        error={errors.emailEmpty || errors.notEmail}
-        style={{ width: "80%" }}
-      />
-      <HelperText type="error" visible={errors.emailEmpty}>
-        Introduzca su dirección de email
-      </HelperText>
-      <HelperText type="error" visible={errors.notEmail}>
-        No es un email válido
-      </HelperText>
+      <View style={{ width: "80%", marginBottom: 12 }}>
+        <TextInput
+          label="Email"
+          mode="outlined"
+          placeholder="Email"
+          keyboardType="email-address"
+          value={email}
+          onChangeText={setEmail}
+          autoCapitalize="none"
+          error={errors.emailEmpty || errors.notEmail}
+        />
+        {errors.emailEmpty && (
+          <HelperText type="error" visible>
+            Introduzca su dirección de email
+          </HelperText>
+        )}
+        {errors.notEmail && (
+          <HelperText type="error" visible>
+            No es un email válido
+          </HelperText>
+        )}
+      </View>
 
       {/* Contraseña */}
-      <TextInput
-        label="Contraseña"
-        mode="outlined"
-        placeholder="Contraseña"
-        value={password}
-        secureTextEntry={!showPassword}
-        onChangeText={setPassword}
-        autoCapitalize="none"
-        error={errors.passwordEmpty || errors.passwordFailed || errors.passwordInvalid || errors.passwordMax || errors.passwordMin}
-        right={
-          <TextInput.Icon
-            icon={showPassword ? "eye" : "eye-off"}
-            onPress={() => setShowPassword(!showPassword)}
-          />
-        }
-        style={{ width: "80%" }}
-      />
-      <HelperText type="error" visible={errors.passwordEmpty}>
-        Introduzca su contraseña
-      </HelperText>
-      <HelperText type="error" visible={errors.passwordMin}>
-        La contraseña debe ser más larga
-      </HelperText>
-      <HelperText type="error" visible={errors.passwordMax}>
-        La contraseña es demasiado larga
-      </HelperText>
-      <HelperText type="error" visible={errors.passwordInvalid}>
-        La contraseña necesita un número y una letra mayúscula
-      </HelperText>
+      <View style={{ width: "80%", marginBottom: 12 }}>
+        <TextInput
+          label="Contraseña"
+          mode="outlined"
+          placeholder="Contraseña"
+          value={password}
+          secureTextEntry={!showPassword}
+          onChangeText={setPassword}
+          autoCapitalize="none"
+          error={errors.passwordEmpty || errors.passwordFailed || errors.passwordInvalid || errors.passwordMax || errors.passwordMin}
+          right={
+            <TextInput.Icon
+              icon={showPassword ? "eye" : "eye-off"}
+              onPress={() => setShowPassword(!showPassword)}
+            />
+          }
+        />
+        {errors.passwordEmpty && (
+          <HelperText type="error" visible>
+            Introduzca su contraseña
+          </HelperText>
+        )}
+        {errors.passwordMin && (
+          <HelperText type="error" visible>
+            La contraseña debe ser más larga
+          </HelperText>
+        )}
+        {errors.passwordMax && (
+          <HelperText type="error" visible>
+            La contraseña es demasiado larga
+          </HelperText>
+        )}
+        {errors.passwordInvalid && (
+          <HelperText type="error" visible>
+            La contraseña necesita un número y una letra mayúscula
+          </HelperText>
+        )}
+      </View>
 
       {/* Repetir contraseña */}
-      <TextInput
-        label="Repita la contraseña"
-        mode="outlined"
-        placeholder="Contraseña"
-        value={repeatPassword}
-        secureTextEntry={!showPassword}
-        onChangeText={setRepeatPassword}
-        autoCapitalize="none"
-        error={errors.passwordEmpty || errors.passwordFailed}
-        right={
-          <TextInput.Icon
-            icon={showPassword ? "eye" : "eye-off"}
-            onPress={() => setShowPassword(!showPassword)}
-          />
-        }
-        style={{ width: "80%" }}
-      />
-      <HelperText type="error" visible={errors.passwordFailed}>
-        La contraseña no coincide
-      </HelperText>
+      <View style={{ width: "80%", marginBottom: 24 }}>
+        <TextInput
+          label="Repita la contraseña"
+          mode="outlined"
+          placeholder="Contraseña"
+          value={repeatPassword}
+          secureTextEntry={!showPassword}
+          onChangeText={setRepeatPassword}
+          autoCapitalize="none"
+          error={errors.passwordEmpty || errors.passwordFailed}
+          right={
+            <TextInput.Icon
+              icon={showPassword ? "eye" : "eye-off"}
+              onPress={() => setShowPassword(!showPassword)}
+            />
+          }
+        />
+        {errors.passwordFailed && (
+          <HelperText type="error" visible>
+            La contraseña no coincide
+          </HelperText>
+        )}
+      </View>
 
       {/* Botón Registrar */}
       <Button
@@ -243,10 +271,11 @@ const RegisterScreen = () => {
         {isProcessing ? <ActivityIndicator animating color="white" /> : "Registrar"}
       </Button>
 
-      <Button mode="text" onPress={() => navigation.navigate("Login")}>
-        ¿Tienes una cuenta? Inicia Sesión
-      </Button>
-    </View>
+        <Button mode="text" onPress={() => navigation.navigate("Login")}>
+          ¿Tienes una cuenta? Inicia Sesión
+        </Button>
+      </View>
+    </GradientBackground>
   );
 };
 

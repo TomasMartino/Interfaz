@@ -14,6 +14,7 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../../../App";
 import BarChart from "./components/barChart";
 import PieChart from "./components/pieChart";
+import GradientBackground from "../../Components/gradientBackground/gradientBackground";
 
 type NavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -56,72 +57,74 @@ const PollResultsScreen = () => {
   }, [chart]);
 
   return (
-    <ScrollView contentContainerStyle={styles.container} style={{ flex: 1 }}>
-      <View style={styles.form}>
-        <Text variant="displayMedium" style={styles.title}>
-          {poll.title}
-        </Text>
-        <SegmentedButtons
-          style={styles.text}
-          value={chart}
-          onValueChange={setChart}
-          buttons={[
-            {
-              value: "bar",
-              label: "Gráfico Barras",
-            },
-            {
-              value: "percentage",
-              label: "Gráfico Porcentajes",
-            },
-          ]}
-        />
-        <Animated.View style={[{ opacity }]}>
-          {chart == "bar" ? (
-            <BarChart votes={votes} poll={poll} />
-          ) : (
-            <PieChart votes={votes} poll={poll} />
-          )}
-        </Animated.View>
-        <Divider style={styles.text} />
-        <View style={styles.text}>
-          {votes.map((v, i) => {
-            return (
-              <Surface
-                key={v.id}
-                style={[
-                  styles.surface,
-                  styles.textSuface,
-                  {
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  },
-                ]}
-              >
-                <View
-                  style={{
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
+    <GradientBackground>
+      <ScrollView contentContainerStyle={styles.container} style={{ flex: 1 }}>
+        <View style={styles.form}>
+          <Text variant="displayMedium" style={styles.title}>
+            {poll.title}
+          </Text>
+          <SegmentedButtons
+            style={styles.text}
+            value={chart}
+            onValueChange={setChart}
+            buttons={[
+              {
+                value: "bar",
+                label: "Gráfico Barras",
+              },
+              {
+                value: "percentage",
+                label: "Gráfico Porcentajes",
+              },
+            ]}
+          />
+          <Animated.View style={[{ opacity }]}>
+            {chart == "bar" ? (
+              <BarChart votes={votes} poll={poll} />
+            ) : (
+              <PieChart votes={votes} poll={poll} />
+            )}
+          </Animated.View>
+          <Divider style={styles.text} />
+          <View style={styles.text}>
+            {votes.map((v, i) => {
+              return (
+                <Surface
+                  key={v.id}
+                  style={[
+                    styles.surface,
+                    styles.textSuface,
+                    {
+                      flexDirection: "row",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    },
+                  ]}
                 >
-                  <IconButton
-                    icon="circle-outline"
-                    containerColor={chartColors[i]}
-                  />
-                  <Text variant="titleMedium">
-                    {v.optionName + "\n"}
-                    {v.numVotes} Votos
-                  </Text>
-                </View>
-                <Text variant="titleMedium">{v.percentageVotes}%</Text>
-              </Surface>
-            );
-          })}
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <IconButton
+                      icon="circle-outline"
+                      containerColor={chartColors[i]}
+                    />
+                    <Text variant="titleMedium">
+                      {v.optionName + "\n"}
+                      {v.numVotes} Votos
+                    </Text>
+                  </View>
+                  <Text variant="titleMedium">{v.percentageVotes}%</Text>
+                </Surface>
+              );
+            })}
+          </View>
         </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </GradientBackground>
   );
 };
 
