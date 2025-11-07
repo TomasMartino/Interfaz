@@ -34,8 +34,9 @@ const HomeScreen = () => {
         const username = await AsyncStorage.getItem("username");
 
         if (!email || !username) {
-          console.warn("Faltan datos del usuario en memoria");
+          console.warn("Faltan datos del usuario en memoria. Redirigiendo al login...");
           setLoading(false);
+          navigation.navigate("Login");
           return;
         }
 

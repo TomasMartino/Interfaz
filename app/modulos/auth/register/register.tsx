@@ -117,7 +117,7 @@ const RegisterScreen = () => {
       await AsyncStorage.setItem("userId", user.id);
 
       setIsProcessing(false);
-      navigation.navigate("Login"); // ir a Login o Home
+      navigation.navigate("Home");
     } catch (err) {
       console.error("Error registrando usuario:", err);
       alert("Ocurrió un error, intente de nuevo");

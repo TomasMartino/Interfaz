@@ -2,8 +2,9 @@ import React from "react";
 import { DarkTheme, NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import * as NavigationBar from "expo-navigation-bar";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { StatusBar } from "react-native";
@@ -35,14 +36,41 @@ export type RootStackParamList = {
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function App() {
+  const [initialRoute, setInitialRoute] = useState<keyof RootStackParamList | null>(null);
+
   useEffect(() => {
-    // Esconder la barra después de 2 segundos (2000 ms)
+    // Verificar autenticación al iniciar la app
+    const checkAuth = async () => {
+      try {
+        const email = await AsyncStorage.getItem("userEmail");
+        const username = await AsyncStorage.getItem("username");
+
+        if (email && username) {
+          setInitialRoute("Home");
+        } else {
+          setInitialRoute("Login");
+        }
+      } catch (error) {
+        console.error("Error verificando autenticación:", error);
+        setInitialRoute("Login");
+      }
+    };
+
+    checkAuth();
+
+    // Esconder la barra después de 200 ms
     const timeout = setTimeout(() => {
       NavigationBar.setVisibilityAsync("hidden");
     }, 200);
 
     return () => clearTimeout(timeout);
   }, []);
+
+  // Mostrar pantalla de carga mientras se verifica la autenticación
+  if (initialRoute === null) {
+    return null;
+  }
+
   return (
     <PaperProvider theme={MD3DarkTheme}>
       <GestureHandlerRootView style={{ flex: 1 }}>
@@ -54,7 +82,7 @@ export default function App() {
               headerTitleAlign: "center",
               header: (props) => <Header {...props} />,
             }}
-            initialRouteName="Home"
+            initialRouteName={initialRoute}
           >
             <Stack.Screen
               name="Login"
