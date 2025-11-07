@@ -15,6 +15,7 @@ import {
 import { chartColors } from "../pollResults/colors";
 import BrowsePollsView from "../../Components/browsePollsView/browsePollsView";
 import { useNavigation } from "@react-navigation/native";
+import GradientBackground from "../../Components/gradientBackground/gradientBackground";
 
 type NavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -63,36 +64,38 @@ const BrowsePollsScreen = () => {
   };
 
   return (
-    <View style={[styles.form]}>
-      <ScrollView
-        contentContainerStyle={styles.container}
-        style={{ flex: 1 }}
-        ref={scrollRef}
-      >
-        <Text variant="displayMedium" style={styles.title}>
-          Explorar Encuestas
-        </Text>
-        <Searchbar
-          placeholder="Busca encuesta por tema, creador..."
-          onChangeText={setSearch}
-          value={search}
-          onIconPress={changeSearch}
-          style={styles.text}
+    <GradientBackground>
+      <View style={[styles.form]}>
+        <ScrollView
+          contentContainerStyle={styles.container}
+          style={{ flex: 1 }}
+          ref={scrollRef}
+        >
+          <Text variant="displayMedium" style={styles.title}>
+            Explorar Encuestas
+          </Text>
+          <Searchbar
+            placeholder="Busca encuesta por tema, creador..."
+            onChangeText={setSearch}
+            value={search}
+            onIconPress={changeSearch}
+            style={styles.text}
+          />
+          <BrowsePollsView polls={polls} navigation={navigation}/>
+        </ScrollView>
+        <FAB
+          icon="plus"
+          label="Crear nueva encuesta"
+          mode="elevated"
+          style={{
+            position: "absolute",
+            right: 16,
+            bottom: 16,
+          }}
+          onPress={() => navigation.navigate("CreatePoll")}
         />
-        <BrowsePollsView polls={polls} navigation={navigation}/>
-      </ScrollView>
-      <FAB
-        icon="plus"
-        label="Crear nueva encuesta"
-        mode="elevated"
-        style={{
-          position: "absolute",
-          right: 16,
-          bottom: 16,
-        }}
-        onPress={() => navigation.navigate("CreatePoll")}
-      />
-    </View>
+      </View>
+    </GradientBackground>
   );
 };
 

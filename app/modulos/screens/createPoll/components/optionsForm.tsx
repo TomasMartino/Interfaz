@@ -1,44 +1,32 @@
-import React, { useState } from "react";
+import React from "react";
+import { StyleSheet } from "react-native";
 import { Text, TextInput, Button, HelperText } from "react-native-paper";
-import { option } from "../createPoll";
-import { StyleProp, StyleSheet, TextStyle } from "react-native";
 
-type props = {
-  options: option[];
-  setOptions: React.Dispatch<React.SetStateAction<option[]>>;
-  error: boolean | undefined;
+type Option = {
+  optionText: string;
 };
 
-const optionsForm = ({
-  options,
-  setOptions,
-  error = false,
-}: props) => {
-  const [isAdding, setIsAdding] = useState(false);
+type Props = {
+  options: Option[];
+  setOptions: React.Dispatch<React.SetStateAction<Option[]>>;
+  error?: boolean;
+};
 
+const OptionsForm: React.FC<Props> = ({ options, setOptions, error = false }) => {
   const addOption = () => {
-    setIsAdding(true);
-
-    const newOption = {
-      optionText: "",
-    };
-
-    setOptions((op) => [...op, newOption]);
-
-    setIsAdding(false);
+    setOptions((prev) => [...prev, { optionText: "" }]);
   };
 
   const editOption = (index: number, text: string) => {
     setOptions((prev) => {
-      const copy = [...prev];
-      copy[index] = { ...copy[index], optionText: text };
-      return copy;
+      const updated = [...prev];
+      updated[index] = { optionText: text };
+      return updated;
     });
   };
 
   const deleteOption = (index: number) => {
-    const updatedOptions = options.filter((_, i) => i !== index);
-    setOptions(updatedOptions);
+    setOptions((prev) => prev.filter((_, i) => i !== index));
   };
 
   return (
@@ -46,34 +34,34 @@ const optionsForm = ({
       <Text variant="headlineSmall" style={styles.text}>
         Opciones
       </Text>
-      {options.map((v, i, { length }) => {
-        return (
-          <TextInput
-            key={i}
-            value={v.optionText}
-            mode="outlined"
-            placeholder={`Opción ${i + 1}`}
-            error={error}
-            onChangeText={(o) => editOption(i, o)}
-            right={
-              i > 1 ? (
-                <TextInput.Icon
-                  icon="delete-outline"
-                  onPress={() => deleteOption(i)}
-                />
-              ) : null
-            }
-            style={i + 1 !== length ? styles.input : styles.inputLast}
-          />
-        );
-      })}
+
+      {options.map((option, i) => (
+        <TextInput
+          key={i}
+          value={option.optionText}
+          mode="outlined"
+          placeholder={`Opción ${i + 1}`}
+          error={error}
+          onChangeText={(text) => editOption(i, text)}
+          right={
+            i > 1 ? (
+              <TextInput.Icon
+                icon="delete-outline"
+                onPress={() => deleteOption(i)}
+              />
+            ) : undefined
+          }
+          style={i < options.length - 1 ? styles.input : styles.inputLast}
+        />
+      ))}
+
       <HelperText type="error" visible={error}>
-        Una de las opciones esta vacia
+        Una de las opciones está vacía
       </HelperText>
+
       <Button
         mode="elevated"
         icon="plus-circle-outline"
-        disabled={isAdding}
         onPress={addOption}
         style={styles.input}
       >
@@ -83,7 +71,7 @@ const optionsForm = ({
   );
 };
 
-export default optionsForm;
+export default OptionsForm;
 
 const styles = StyleSheet.create({
   text: {
@@ -97,3 +85,4 @@ const styles = StyleSheet.create({
     width: "100%",
   },
 });
+

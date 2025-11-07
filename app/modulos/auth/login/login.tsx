@@ -1,128 +1,182 @@
-// LoginScreen.js
 import React, { useState } from "react";
-import { KeyboardAvoidingView, Platform, View } from "react-native";
-import styled from "styled-components/native"; // 👈 styled-components (npm install styled-components)
+import { View, Alert } from "react-native";
 import {
-  Text,
   TextInput,
   Button,
   ActivityIndicator,
   HelperText,
 } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
-import { RootStackParamList } from "../../../../App";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { RootStackParamList } from "../../../../App";
+import { supabase } from "../../../../backend/server/supabase";
+import Logo from "../../Components/logo/logo";
+import GradientBackground from "../../Components/gradientBackground/gradientBackground";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, "Login">;
 
-type errorsTypes = {
+type Errors = {
   usernameEmpty: boolean;
   passwordEmpty: boolean;
+  credentialsFailed: boolean;
 };
 
-const startErrors: errorsTypes = {
+const initialErrors: Errors = {
   usernameEmpty: false,
   passwordEmpty: false,
+  credentialsFailed: false,
 };
 
 const LoginScreen = () => {
   const navigation = useNavigation<NavigationProp>();
-  const [username, setUsername] = useState("");
+  const [usernameOrEmail, setUsernameOrEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [errors, setErrors] = useState<errorsTypes>(startErrors);
+  const [errors, setErrors] = useState<Errors>(initialErrors);
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     setIsProcessing(true);
+    setErrors(initialErrors);
 
     if (checkErrors()) {
       setIsProcessing(false);
       return;
     }
-    
-    alert(`Login con correo: ${username}`);
-    navigation.navigate('Home');
+
+    try {
+      let emailToUse = usernameOrEmail;
+
+      // Si no es un email, buscamos el email asociado al username
+      if (!/\S+@\S+\.\S+/.test(usernameOrEmail)) {
+        const { data: userData, error: userError } = await supabase
+          .from("Users")
+          .select("email")
+          .eq("username", usernameOrEmail)
+          .maybeSingle();
+
+        if (userError || !userData) {
+          setErrors({ ...initialErrors, credentialsFailed: true });
+          setIsProcessing(false);
+          return;
+        }
+
+        emailToUse = userData.email;
+      }
+
+      // Intentar login
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: emailToUse,
+        password,
+      });
+
+      if (error || !data.user) {
+        if (error?.message?.includes("Email not confirmed")) {
+          Alert.alert(
+            "Correo no verificado",
+            "Por favor, verifica tu correo electrónico antes de iniciar sesión."
+          );
+        } else {
+          setErrors({ ...initialErrors, credentialsFailed: true });
+        }
+        setIsProcessing(false);
+        return;
+      }
+
+      // Si llega acá, todo bien
+      Alert.alert("✅ Sesión iniciada correctamente");
+      navigation.navigate("Home");
+    } catch (err: any) {
+      Alert.alert("Error de conexión", err.message ?? String(err));
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const checkErrors = (): boolean => {
-    let newErrors = { ...startErrors };
-    if (!username) {
-      newErrors.usernameEmpty = true;
-    }
+    const newErrors = { ...initialErrors };
 
-    if (!password) {
-      newErrors.passwordEmpty = true;
-    }
-
-    const hasErrors = Object.values(newErrors).includes(true);
+    if (!usernameOrEmail) newErrors.usernameEmpty = true;
+    if (!password) newErrors.passwordEmpty = true;
 
     setErrors(newErrors);
-
-    return hasErrors;
+    return Object.values(newErrors).includes(true);
   };
 
   return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <Text variant="displayMedium" style={{ marginBottom: 16 }}>
-        Iniciar Sesión
-      </Text>
-      <TextInput
-        label="Nombre de Usuario"
-        mode="outlined"
-        placeholder="Nombre"
-        value={username}
-        onChangeText={setUsername}
-        autoCapitalize="none"
-        error={errors.usernameEmpty}
-        style={{
-          width: "80%",
-        }}
-      />
-      <HelperText type="error" visible={errors.usernameEmpty}>
-        Introduzca su nombre de usuario
-      </HelperText>
-      <TextInput
-        label="Contraseña"
-        mode="outlined"
-        placeholder="Contraseña"
-        value={password}
-        secureTextEntry={!showPassword}
-        error={errors.passwordEmpty}
-        onChangeText={setPassword}
-        autoCapitalize="none"
-        right={
-          <TextInput.Icon
-            icon={showPassword ? "eye" : "eye-off"}
-            onPress={() => setShowPassword(!showPassword)}
-          />
-        }
-        style={{
-          width: "80%",
-        }}
-      ></TextInput>
-      <HelperText type="error" visible={errors.passwordEmpty}>
-        Introduzca su contraseña
-      </HelperText>
+    <GradientBackground>
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 16 }}>
+        <View style={{ marginBottom: 32 }}>
+          <Logo />
+        </View>
+
+        {/* Usuario o Email */}
+        <View style={{ width: "80%", marginBottom: 12 }}>
+        <TextInput
+          label="Usuario o Email"
+          mode="outlined"
+          placeholder="Ingresa tu nombre de usuario o email"
+          value={usernameOrEmail}
+          onChangeText={setUsernameOrEmail}
+          autoCapitalize="none"
+          error={errors.usernameEmpty || errors.credentialsFailed}
+        />
+        {errors.usernameEmpty && (
+          <HelperText type="error" visible>
+            Introduzca su usuario o email
+          </HelperText>
+        )}
+      </View>
+
+      {/* Contraseña */}
+      <View style={{ width: "80%", marginBottom: 12 }}>
+        <TextInput
+          label="Contraseña"
+          mode="outlined"
+          placeholder="Contraseña"
+          value={password}
+          secureTextEntry={!showPassword}
+          onChangeText={setPassword}
+          autoCapitalize="none"
+          error={errors.passwordEmpty || errors.credentialsFailed}
+          right={
+            <TextInput.Icon
+              icon={showPassword ? "eye" : "eye-off"}
+              onPress={() => setShowPassword(!showPassword)}
+            />
+          }
+        />
+        {errors.passwordEmpty && (
+          <HelperText type="error" visible>
+            Introduzca su contraseña
+          </HelperText>
+        )}
+        {errors.credentialsFailed && (
+          <HelperText type="error" visible>
+            Credenciales incorrectas o cuenta no verificada
+          </HelperText>
+        )}
+      </View>
+
+      {/* Botón Ingresar */}
       <Button
         mode="contained"
-        style={{
-          width: "80%",
-          marginBottom: 16,
-        }}
+        style={{ width: "80%", marginTop: 12, marginBottom: 16 }}
         onPress={handleLogin}
         disabled={isProcessing}
       >
         {isProcessing ? (
-          <ActivityIndicator animating={true} color="white" />
+          <ActivityIndicator animating color="white" />
         ) : (
           "Ingresar"
         )}
       </Button>
-      <Button mode="text" onPress={() => navigation.navigate("Register")}>
-        ¿No tienes cuenta? Registrate
-      </Button>
-    </View>
+
+        <Button mode="text" onPress={() => navigation.navigate("Register")}>
+          ¿No tienes cuenta? Regístrate
+        </Button>
+      </View>
+    </GradientBackground>
   );
 };
 
