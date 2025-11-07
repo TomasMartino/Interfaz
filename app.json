@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "proyectoGestion",
-    "slug": "proyectoGestion",
+    "name": "Vox Populi",
+    "slug": "vox-populi",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
